@@ -1,7 +1,7 @@
 import { IsString, IsEmail, MinLength, IsNotEmpty, IsArray, ArrayNotEmpty } from 'class-validator';
 import { UserRole } from 'src/auth/roles.enum';
 
-export class CreateUserDto {
+export class MailDto {
   @IsNotEmpty()
   @IsString()
   readonly fullname: string;
@@ -9,11 +9,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsEmail({}, { message: 'Please enter correct email' })
   readonly email: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(6)
-  readonly password: string;
 
   @IsNotEmpty()
   @IsString()
@@ -34,8 +29,11 @@ export class CreateUserDto {
  
   @IsNotEmpty()
   @IsArray()
-  @IsString({ each: true })
-  @ArrayNotEmpty({ message: 'Au moins un rôle doit être fourni' })
-  roles: UserRole[];
+  @ArrayNotEmpty({ message: 'At least one role must be provided' })
+  readonly roles: string[];
+  
+  constructor() {
+    this.roles = [' FINANCIER']; // Initialiser le champ roles avec la valeur par défaut
+  }
   
 }

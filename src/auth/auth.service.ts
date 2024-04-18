@@ -6,15 +6,20 @@ import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
-
+import { Client, ClientDocument } from '../schemas/clients.schema';
+import { ClientDto } from 'src/clients/dto/clients.dto';
+import * as crypto from 'crypto';
+import { MailerService } from '../mailer/mailer.service';
 
 
 @Injectable()
 export class AuthService {
     constructor(
-        @InjectModel(User.name)
-        private  userModel: Model<UserDocument>,
+      @InjectModel(User.name) private userModel: Model<UserDocument>,
+        @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
         private jwtService: JwtService,
+        private mailerService: MailerService,
+        
      
        
       ) {}
@@ -40,6 +45,44 @@ export class AuthService {
           }
         }
       }
+      async signUpClient(clientDto: ClientDto): Promise<{ token: string; user: Client }> {
+        const { fullname, email, password, country, num_phone, address, code_postal,roles, matricule_fiscale } = clientDto;
+    
+        try {
+          const hashedPassword = await bcrypt.hash(password, 10);
+    
+
+          let type = 'physique';
+          if (matricule_fiscale) {
+         
+            type = 'morale';
+          }
+    
+          const client = await this.clientModel.create({
+            fullname,
+            email,
+            password: hashedPassword,
+            country,
+            num_phone,
+            address,
+            code_postal,
+            roles,
+            type,
+            matricule_fiscale,
+          });
+    
+          const token = this.jwtService.sign({ id: client._id });
+    
+          return { token, user: client };
+        } catch (error) {
+          if (error.code === 11000) {
+            throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+          } else {
+            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+        }
+      }
+    
       async login(loginDto: LoginDto): Promise<{ token: string, user: User }> {
         const { email, password } = loginDto;
         const user = await this.userModel.findOne({ email });
@@ -49,7 +92,54 @@ export class AuthService {
         } else {
           throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
         }
+        
       }
+    // service.js
+async requestPasswordReset(email: string): Promise<{ resetCode: string; resetCodeExpiration: Date }> {
+  const user = await this.userModel.findOne({ email });
+  if (!user) {
+    throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+  }
+  const currentTime = new Date();
+  if (user.resetCodeExpiration && currentTime < user.resetCodeExpiration) {
+    throw new HttpException('resendError', HttpStatus.BAD_REQUEST);
+  }
+  const resetCode = this.generateRandomCode();
+  const resetCodeExpiration = new Date(Date.now() + 120000); // timeout : 116 seconde ( presque 2min)
+  user.resetCode = resetCode;
+  user.resetCodeExpiration = resetCodeExpiration;
+  await user.save();
+
+  // Assurez-vous que mailerService est défini dans le constructeur
+  await this.mailerService.sendResetPasswordCode(email, resetCode);
+
+  return { resetCode, resetCodeExpiration }; // Retourne le code de réinitialisation et son expiration
+}
+
+      async resetPassword(email: string, newPassword: string): Promise<void> {
+        const user = await this.userModel.findOne({ email });
+      
+      
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+  
+        await user.save();
+      }
+      private generateRandomCode(length: number = 6): string {
+        const buffer = crypto.randomBytes(length);
+        return buffer.toString('hex').slice(0, length).toUpperCase(); // Convertir en hexadécimal et prendre une sous-chaîne de longueur spécifiée
+      }
+      async comparecode(email: string, code: string): Promise<void> {
+        const user = await this.userModel.findOne({ email });
+        if (!user || user.resetCode !== code || user.resetCodeExpiration < new Date()) {
+          throw new HttpException('Invalid reset code', HttpStatus.BAD_REQUEST);
+        }
+        user.resetCode = null;
+        user.resetCodeExpiration = null;
+        await user.save();
+      }
+   
+      
       // async logout(userId: string): Promise<void> {
       //   await this.userModel.updateOne({ _id: userId }, { refreshToken: null });
       // }

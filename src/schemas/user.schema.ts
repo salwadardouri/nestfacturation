@@ -1,14 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-export type UserDocument = User & Document ;
-@Schema({
-  timestamps: true,
-})
 
+export type UserDocument = User & Document;
 
-
-export class User  {
-  
+@Schema()
+export class User {
   @Prop({required: true})
   fullname: string;
 
@@ -22,20 +18,23 @@ export class User  {
   country: string;
 
   @Prop({required: true})
-  num_phone: number;
+  num_phone: string;
 
   @Prop({required: true})
   address: string;
 
   @Prop({required: true})
-  code_postal: number;
+  code_postal: string;
 
   @Prop({ type: [String]})
   roles: string[];
-  // @Prop()
-  // refreshToken?: string;
-
+    // Ajoutez les propriétés resetCode et resetCodeExpiration
+    @Prop()
+    resetCode: string;
+  
+    @Prop()
+    resetCodeExpiration: Date;
+ 
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-

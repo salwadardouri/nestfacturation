@@ -1,5 +1,5 @@
 import { IsString, IsEmail, MinLength, IsNotEmpty, IsIn,ArrayUnique,IsArray ,ArrayNotEmpty} from 'class-validator';
-
+import { UserRole } from '../roles.enum';
 
 export class SignUpDto {
   @IsNotEmpty()
@@ -36,6 +36,8 @@ export class SignUpDto {
   @ArrayUnique()
   @IsString({ each: true })
   @ArrayNotEmpty({ message: 'Au moins un rôle doit être fourni' })
-  readonly roles: string[];
+  roles: UserRole[];
+  readonly matricule_fiscale:string;
+  readonly type:string;
   
 }
