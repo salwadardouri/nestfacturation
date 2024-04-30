@@ -1,4 +1,4 @@
-import { Injectable,HttpException, HttpStatus,  } from '@nestjs/common';
+import { Injectable,HttpException, HttpStatus,BadRequestException  } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
@@ -45,19 +45,35 @@ export class AuthService {
           }
         }
       }
-      async signUpClient(clientDto: ClientDto): Promise<{ token: string; user: Client }> {
-        const { fullname, email, password, country, num_phone, address, code_postal,roles, matricule_fiscale } = clientDto;
+      async signUpClient(clientDto: ClientDto): Promise<{ token: string; user: any }> {
+        const { fullname, email, password, country, num_phone, address, code_postal, roles, matricule_fiscale } = clientDto;
     
         try {
+          // Vérifiez si l'email existe déjà
+          const existingClient = await this.clientModel.findOne({ email });
+          if (existingClient) {
+            throw new HttpException('L\'email existe déjà', HttpStatus.CONFLICT);
+          }
+    
+          // Vérifiez la force du mot de passe (une validation supplémentaire au cas où)
+          const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+          if (!strongPasswordPattern.test(password)) {
+            throw new HttpException(
+              'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre, et un caractère spécial',
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+    
+          // Hash le mot de passe
           const hashedPassword = await bcrypt.hash(password, 10);
     
-
+          // Détermine le type de client
           let type = 'physique';
           if (matricule_fiscale) {
-         
             type = 'morale';
           }
     
+          // Crée le client
           const client = await this.clientModel.create({
             fullname,
             email,
@@ -71,17 +87,21 @@ export class AuthService {
             matricule_fiscale,
           });
     
+          // Génère le token JWT
           const token = this.jwtService.sign({ id: client._id });
     
           return { token, user: client };
         } catch (error) {
           if (error.code === 11000) {
-            throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+            throw new HttpException('L\'email existe déjà', HttpStatus.CONFLICT);
+          } else if (error instanceof HttpException) {
+            throw error; // Relance les exceptions personnalisées
           } else {
-            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial', HttpStatus.INTERNAL_SERVER_ERROR);
           }
         }
       }
+    
     
       async login(loginDto: LoginDto): Promise<{ token: string, user: User }> {
         const { email, password } = loginDto;
@@ -105,7 +125,7 @@ async requestPasswordReset(email: string): Promise<{ resetCode: string; resetCod
     throw new HttpException('resendError', HttpStatus.BAD_REQUEST);
   }
   const resetCode = this.generateRandomCode();
-  const resetCodeExpiration = new Date(Date.now() + 120000); // timeout : 116 seconde ( presque 2min)
+  const resetCodeExpiration = new Date(Date.now() + 60000); // timeout : 60000 miliseconde =1min 
   user.resetCode = resetCode;
   user.resetCodeExpiration = resetCodeExpiration;
   await user.save();
@@ -116,15 +136,24 @@ async requestPasswordReset(email: string): Promise<{ resetCode: string; resetCod
   return { resetCode, resetCodeExpiration }; // Retourne le code de réinitialisation et son expiration
 }
 
-      async resetPassword(email: string, newPassword: string): Promise<void> {
-        const user = await this.userModel.findOne({ email });
-      
-      
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        user.password = hashedPassword;
-  
-        await user.save();
-      }
+async resetPassword(email: string, newPassword: string): Promise<void> {
+  const user = await this.userModel.findOne({ email });
+
+  // Validate new password strength
+  this.validatePasswordStrength(newPassword);
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
+
+  await user.save();
+}
+  private validatePasswordStrength(password: string): void {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            throw new BadRequestException('The password should be strong');
+        }
+    }
+
       private generateRandomCode(length: number = 6): string {
         const buffer = crypto.randomBytes(length);
         return buffer.toString('hex').slice(0, length).toUpperCase(); // Convertir en hexadécimal et prendre une sous-chaîne de longueur spécifiée

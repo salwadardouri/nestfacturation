@@ -7,7 +7,8 @@ export type FinancierDocument = Financier & Document;
 
 @Schema({collection:'users',timestamps:true})
 export class Financier extends User {
-
+    @Prop({ unique: [true, 'Duplicate reference '] })
+    refFin: string;
     @Prop()
     resetToken: string;
     

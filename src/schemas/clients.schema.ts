@@ -6,7 +6,8 @@ export type ClientDocument = Client & Document;
 
 @Schema({collection:'users',timestamps:true})
 export class Client extends User {
-  @Prop()
+ 
+  @Prop({ unique: [true, 'Duplicate reference '] })
 refClient: string;
 
   @Prop({ default: null })

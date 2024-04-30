@@ -38,12 +38,15 @@ export class AuthController {
       // Setting HttpOnly cookie
       res.cookie('token', token, { httpOnly: true, secure: true }); // Adjust 'secure' based on your deployment environment
 
-      res.status(HttpStatus.CREATED).json({ message: 'User created successfully', user, token });
+      
+      res.status(HttpStatus.CREATED).json({ message: 'Utilisateur créé avec succès', user, token });
     } catch (error) {
       if (error.status === HttpStatus.CONFLICT) {
-        res.status(HttpStatus.CONFLICT).json({ message: 'Email already exists' });
+        res.status(HttpStatus.CONFLICT).json({ message: 'L\'email existe déjà' });
+      } else if (error.name === 'ValidationError') { // Par exemple pour les erreurs de validation
+        res.status(HttpStatus.BAD_REQUEST).json({ message: 'Erreur de validation', details: error.message });
       } else {
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial' });
       }
     }
   }
@@ -80,6 +83,7 @@ async resetPassword(
   await this.authService.resetPassword(email,  newPassword);
   return { message: 'Password reset successfully' };
 }
+
 @Post('compare-code')
 async comparecode(
   @Body('email') email: string,

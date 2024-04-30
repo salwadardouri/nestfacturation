@@ -1,9 +1,7 @@
 import { IsString, IsEmail, IsNumber, IsNotEmpty } from 'class-validator';
 
 export class ParametreDto {
-  @IsNotEmpty()
-  @IsString()
-  ref: string;
+
 
   @IsNotEmpty()
   @IsString()

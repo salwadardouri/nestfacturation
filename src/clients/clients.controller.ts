@@ -40,21 +40,15 @@ export class ClientsController {
   }
   @Post('create-password/:token')
   async resetPassword(@Param('token') token: string, @Body('newPassword') newPassword: string) {
-    try {
+   
       const email = await this.service.getEmailFromToken(token);
       if (!email) {
         throw new NotFoundException('Token invalide ou expiré.');
       }
 
       await this.service.resetPassword(email, newPassword);
-
-      return 'Le mot de passe a été réinitialisé avec succès.';
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      throw new Error('Une erreur est survenue lors de la réinitialisation du mot de passe.');
-    }
+      return { message: 'Password create successfully' };
+    
   }
   @Get()
   async getClients(): Promise<Client[]> {

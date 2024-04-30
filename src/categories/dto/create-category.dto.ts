@@ -5,5 +5,6 @@ export class CreateCategoryDto {
   @IsString()
   @IsNotEmpty()
   Titre_Categorie: string;
+  @IsNotEmpty()
   Description_Categorie:string;
 }

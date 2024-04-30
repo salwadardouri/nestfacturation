@@ -1,4 +1,4 @@
-import { IsString, IsEmail, MinLength, IsNotEmpty, IsIn,ArrayUnique,IsArray ,ArrayNotEmpty} from 'class-validator';
+import { IsString, IsEmail, MinLength, IsNotEmpty, Matches,ArrayUnique,IsArray ,ArrayNotEmpty} from 'class-validator';
 import { UserRole } from '../roles.enum';
 
 export class ClientDto {
@@ -9,10 +9,12 @@ export class ClientDto {
   @IsNotEmpty()
   @IsEmail({}, { message: 'Please enter correct email' })
   readonly email: string;
-
   @IsNotEmpty()
   @IsString()
-  @MinLength(6)
+  @MinLength(6, { message: 'Le mot de passe doit avoir au moins 6 caractères' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/, {
+    message: 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial',
+  })
   readonly password: string;
 
   @IsNotEmpty()

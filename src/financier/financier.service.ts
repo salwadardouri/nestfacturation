@@ -13,7 +13,7 @@ import * as validator from 'validator';
 
 @Injectable()
 export class FinancierService{
-
+  private sequenceNumbers: { [key: string]: number } = {};
 
   constructor(
     @InjectModel(Financier.name) private financierModel: Model<FinancierDocument>,private readonly mailerService: MailerService 
@@ -47,6 +47,22 @@ export class FinancierService{
   async isEmailValid(email: string): Promise<boolean> {
     return validator.isEmail(email);
   }
+  private async generateSequenceNumber(type: string): Promise<number> {
+    // Vérifier si le type existe déjà dans sequenceNumbers, sinon initialiser à 0
+    if (!this.sequenceNumbers[type]) {
+      this.sequenceNumbers[type] = 0;
+    }
+
+    // Incrémenter le numéro de séquence et le stocker
+    this.sequenceNumbers[type]++;
+
+    // Formater le numéro de séquence avec 4 chiffres
+    const sequenceNumber = this.sequenceNumbers[type].toString().padStart(4, '0');
+
+    // Retourner le numéro de séquence converti en nombre
+    return parseInt(sequenceNumber);
+  }
+
     async createAccount(financierDto: FinancierDto): Promise<{ user: Financier; resetLink: string; message: string }> {
       const { fullname, email, country, num_phone, address, code_postal, roles} = financierDto;
     
@@ -68,9 +84,15 @@ export class FinancierService{
       });
   
       const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+      // Génération du numéro de séquence
+      const sequenceNumber = await this.generateSequenceNumber('financier');
+
+      // Génération du Ref unique
+      const finRef = `VST-FIN-${sequenceNumber.toString().padStart(4, '0')}`;
+
   
-  
-      const client = await this.financierModel.create({
+      const financier = await this.financierModel.create({
         fullname,
         email,
         password: hashedPassword,
@@ -79,23 +101,24 @@ export class FinancierService{
         address,
         code_postal,
         roles,
+        refFin: finRef,
       });
   
       // Logique pour envoyer le lien unique
       const resetToken = crypto.randomBytes(32).toString('hex');
       const resetTokenExpiration = new Date(Date.now() + 3600000); // 1 heure plus tard
   
-      // Mettre à jour les propriétés resetToken et resetTokenExpiration du client
-      client.resetToken = resetToken;
-      client.resetTokenExpiration = resetTokenExpiration;
-      await client.save();
+      // Mettre à jour les propriétés resetToken et resetTokenExpiration du financier
+      financier.resetToken = resetToken;
+      financier.resetTokenExpiration = resetTokenExpiration;
+      await financier.save();
   
       // Envoyer le lien de réinitialisation du mot de passe avec le token généré
       const resetLink = `http://localhost:3000/create-passworfin/${resetToken}`;
-      await this.mailerService.sendResetPasswordLink(client.email, resetToken);
+      await this.mailerService.sendResetPasswordLink(financier.email, resetToken);
   
       return {
-        user: client,
+        user: financier,
         resetLink,
         message: 'Le compte a été créé avec succès. Un lien de réinitialisation de mot de passe a été envoyé à votre adresse e-mail.',
       };
@@ -109,21 +132,21 @@ export class FinancierService{
   }
   async getEmailFromToken(token: string): Promise<string | null> {
     try {
-      // Rechercher le client par le token dans la base de données
-      const client = await this.financierModel.findOne({ resetToken: token });
+      // Rechercher le financier par le token dans la base de données
+      const financier = await this.financierModel.findOne({ resetToken: token });
 
-      if (!client) {
-        throw new NotFoundException('Client introuvable pour ce token.');
+      if (!financier) {
+        throw new NotFoundException('financier introuvable pour ce token.');
       }
 
-      // Renvoyer l'email associé au client trouvé
-      return client.email;
+      // Renvoyer l'email associé au financier trouvé
+      return financier.email;
     } catch (error) {
       // Gérer les erreurs de recherche
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new Error('Une erreur est survenue lors de la recherche du client par le token.');
+      throw new Error('Une erreur est survenue lors de la recherche du financier par le token.');
     }
   }
   async resetPassword(email: string, newPassword: string): Promise<string> {
