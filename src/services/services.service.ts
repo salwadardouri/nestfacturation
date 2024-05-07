@@ -58,15 +58,18 @@ export class ServicesService {
  
 
     // Crée un nouveau service avec les données du DTO
-    const { libelle, quantite, prix_unitaire, tvaId } = createServiceDto;
+    const { libelle, quantite, prix_unitaire, tvaId ,montant_HT,categoriesId,deviseId} = createServiceDto;
     const newService = new this.serviceModel({
       reference:refS,
       libelle,
       quantite,
       prix_unitaire,
+      montant_HT,
       client: client._id,
       tva: tvaId,
-      montant_HT: quantite * prix_unitaire
+      categories:categoriesId,
+      devise:deviseId,
+
 
     });
 
@@ -83,7 +86,7 @@ export class ServicesService {
 
 
   async findAll(): Promise<ServicesDto[]> {
-    const services = await this.serviceModel.find().populate('client').populate('tva').exec();
+    const services = await this.serviceModel.find().populate('client').populate('tva').populate('categories').populate('devise').exec();
     return services.map(service => service.toObject());
   }
 }

@@ -16,9 +16,17 @@ export class ServicesDto {
   montant_HT: number;
   @IsMongoId()
   @IsNotEmpty()
-  clientId: string; // L'identifiant du client associé
+  clientId: string; 
 
   @IsMongoId()
   @IsNotEmpty()
-  tvaId: string; // L'identifiant de la TVA associée
+  tvaId: string; 
+
+  @IsMongoId()
+  @IsNotEmpty()
+  deviseId: string;
+  
+  @IsMongoId()
+  @IsNotEmpty()
+  categoriesId : string;
 }

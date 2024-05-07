@@ -18,6 +18,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { TimbreModule } from './timbre/timbre.module';
 
+import { DeviseModule } from './devise/devise.module';
+
 
 
 @Module({
@@ -42,8 +44,8 @@ import { TimbreModule } from './timbre/timbre.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'), // Chemin du dossier 'uploads'
       serveRoot: '/uploads', // Serveur statique point de départ
-    }), // Ajout de la configuration du serveur statique
-  ],
+    }),
+    DeviseModule,   ],
   controllers: [AppController],
   providers: [AppService, MailerService,],
 })
