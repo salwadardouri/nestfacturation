@@ -1,4 +1,4 @@
-import { Injectable ,HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable ,HttpException, HttpStatus ,NotFoundException} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ParametreDto } from './dto/parametre.dto';
@@ -44,16 +44,45 @@ export class ParametreService {
     return this.parametreModel.findOne({ _id: id });
   }
 
-  async Update(id: string, body: ParametreDto) {
-    return this.parametreModel.findByIdAndUpdate(
-      { _id: id },
-      { $set: body },
-      { new: true },
-    );
-  }
 
-  async Search(key: string) {
-    const keyword = key ? { $or: [{ nom_S: { $regex: key, $options: 'i' } }] } : {};
-    return this.parametreModel.find(keyword);
+
+async update(id: string, parametreDto: ParametreDto): Promise<Parametre> {
+  const updatedParametre = await this.parametreModel.findByIdAndUpdate(id, parametreDto, { new: true }).exec();
+  if (!updatedParametre) {
+    throw new NotFoundException(`Parametre not found`);
+  }
+  return updatedParametre;
+}
+
+  async delete(id: string): Promise<boolean> {
+    const deletedParametre = await this.parametreModel.findByIdAndDelete(id).exec();
+    return !!deletedParametre;
+  }
+  // async Search(key: string) {
+  //   const keyword = key ? { $or: [{ nom_S: { $regex: key, $options: 'i' } }] } : {};
+  //   return this.parametreModel.find(keyword);
+  // }
+  async Search(key: string): Promise<any> {
+    const keyword = key
+      ? {
+          $or: [
+            { Nom_S: { $regex: key, $options: 'i' } },
+            { Email_S: { $regex: key, $options: 'i' } },
+            { Paye_S: { $regex: key, $options: 'i' } },
+            { Address_S: { $regex: key, $options: 'i' } },
+            { Num_Phone_S: { $regex: key, $options: 'i' } },
+            { Code_Postal_S: { $regex: key, $options: 'i' } },
+            { Matricule_Fiscale_S: { $regex: key, $options: 'i' } },
+
+          ],
+        }
+      : {};
+
+    try {
+      const results = await this.parametreModel.find(keyword);
+      return results.length > 0 ? results : [];
+    } catch (error) {
+      throw new Error('An error occurred while searching');
+    }
   }
 }

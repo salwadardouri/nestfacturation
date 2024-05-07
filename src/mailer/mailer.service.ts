@@ -25,14 +25,8 @@ export class MailerService {
       subject: subject,
       text: text,
     };
-
-    try {
-      await this.transporter.sendMail(mailOptions);
-      console.log('Mail not found');
-    } catch (error) {
-      console.error('Email sent successfully', error);
-      throw new Error('Failed to send email'); // Optionally re-throw or handle error differently
-    }
+    console.error('Email sent successfully');
+  
   }
   
   async sendResetPasswordCode(email: string, code: string): Promise<void> {

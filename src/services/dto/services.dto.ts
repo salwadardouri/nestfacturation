@@ -3,8 +3,7 @@
 
 export class ServicesDto {
   
-  reference: string;
-  montant_HT: number;
+
   @IsString()
   @IsNotEmpty()
   libelle: string;
@@ -14,7 +13,7 @@ export class ServicesDto {
 
   @IsNumber()
   prix_unitaire: number;
-
+  montant_HT: number;
   @IsMongoId()
   @IsNotEmpty()
   clientId: string; // L'identifiant du client associé

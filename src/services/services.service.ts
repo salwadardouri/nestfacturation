@@ -17,6 +17,7 @@ export class ServicesService {
     @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
 
   ) {}
+
   private async generateSequenceNumber(type: string): Promise<number> {
     // Vérifier si le type existe déjà dans sequenceNumbers, sinon initialiser à 0
     if (!this.sequenceNumbers[type]) {
@@ -48,11 +49,13 @@ export class ServicesService {
     if (!client) {
       throw new NotFoundException('Client not found');
     }
+    
  // Génération du numéro de séquence
  const sequenceNumber = await this.generateSequenceNumber('services');
 
  // Génération du Ref unique
  const refS = `VST-S-${sequenceNumber.toString().padStart(4, '0')}`;
+ 
 
     // Crée un nouveau service avec les données du DTO
     const { libelle, quantite, prix_unitaire, tvaId } = createServiceDto;
@@ -63,54 +66,20 @@ export class ServicesService {
       prix_unitaire,
       client: client._id,
       tva: tvaId,
-   
+      montant_HT: quantite * prix_unitaire
 
     });
 
-    // Calcule le montant HT
-    newService.montant_HT = quantite * prix_unitaire;
+ 
 
     // Enregistre le service dans la base de données
     return await newService.save();
   }
 
-  // async create(createServiceDto: ServicesDto): Promise<Service> {
-  //   // Génération de la référence unique
-  //   const timestamp = Date.now();
-  //   const randomPart = crypto.randomBytes(4).toString('hex'); // Génère 8 caractères hexadécimaux
-  //   const reference = `${timestamp}-${randomPart}`;
-
-  //   // Calcul du montant hors taxes
-  //   const montant_HT = createServiceDto.prix_unitaire * createServiceDto.quantite;
-
-  //   // Vérifie si le client existe
-  //   const clientExists = await this.clientModel.exists({
-  //       _id: createServiceDto.clientId,
-  //   });
-  //   if (!clientExists) {
-  //       throw new Error('Client not found');
-  //   }
-
-  //   // Récupère le client à partir de l'ID
-  //   const client = await this.clientModel.findById(createServiceDto.clientId);
-  //   if (!client) {
-  //       throw new Error('Client not found');
-  //   }
+ 
 
 
 
-  //   // Crée le service en incluant la TVA
-  //   const createdService = new this.serviceModel({
-  //       ...createServiceDto,
-  //       reference,
-  //       montant_HT,
-  //       client: client._id,
-       
-  //   });
-
-  //   // Enregistre le service créé dans la base de données
-  //   return createdService.save();
-  // }
 
 
   async findAll(): Promise<ServicesDto[]> {

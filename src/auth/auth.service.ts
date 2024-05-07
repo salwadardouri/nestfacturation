@@ -47,15 +47,19 @@ export class AuthService {
       }
       async signUpClient(clientDto: ClientDto): Promise<{ token: string; user: any }> {
         const { fullname, email, password, country, num_phone, address, code_postal, roles, matricule_fiscale } = clientDto;
-    
+
+
+        // Vérifier la validité de l'e-mail
         try {
-          // Vérifiez si l'email existe déjà
-          const existingClient = await this.clientModel.findOne({ email });
-          if (existingClient) {
-            throw new HttpException('L\'email existe déjà', HttpStatus.CONFLICT);
-          }
+ 
     
-          // Vérifiez la force du mot de passe (une validation supplémentaire au cas où)
+     // Recherche d'un client existant avec cet email
+  const existingClient = await this.clientModel.findOne({ email: clientDto.email });
+
+  if (existingClient) {
+    throw new HttpException("L'email existe déjà", HttpStatus.CONFLICT);
+  }
+  // Vérifiez la force du mot de passe (une validation supplémentaire au cas où)
           const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
           if (!strongPasswordPattern.test(password)) {
             throw new HttpException(
@@ -75,6 +79,7 @@ export class AuthService {
     
           // Crée le client
           const client = await this.clientModel.create({
+            status:true,
             fullname,
             email,
             password: hashedPassword,
@@ -92,13 +97,11 @@ export class AuthService {
     
           return { token, user: client };
         } catch (error) {
-          if (error.code === 11000) {
-            throw new HttpException('L\'email existe déjà', HttpStatus.CONFLICT);
-          } else if (error instanceof HttpException) {
-            throw error; // Relance les exceptions personnalisées
+          if (error.code === 11000 || error.status === HttpStatus.CONFLICT) {
+            throw new HttpException("L'email existe déjà", HttpStatus.CONFLICT);
           } else {
-            throw new HttpException('Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial', HttpStatus.INTERNAL_SERVER_ERROR);
-          }
+            throw new HttpException("Erreur interne du serveur", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         }
       }
     

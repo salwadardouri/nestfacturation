@@ -14,7 +14,8 @@ import { DevisModule } from './devis/devis.module';
 import { ServicesModule } from './services/services.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TvaModule } from './tva/tva.module';
-
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { TimbreModule } from './timbre/timbre.module';
 
 
@@ -25,6 +26,7 @@ import { TimbreModule } from './timbre/timbre.module';
       envFilePath: '.env',
       isGlobal: true,
     }),
+    
     MongooseModule.forRoot(process.env.DB_URI),
     AuthModule,
     MailerModule,
@@ -37,8 +39,10 @@ import { TimbreModule } from './timbre/timbre.module';
     CategoriesModule,
     TvaModule,
     TimbreModule,
-  
-
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), // Chemin du dossier 'uploads'
+      serveRoot: '/uploads', // Serveur statique point de départ
+    }), // Ajout de la configuration du serveur statique
   ],
   controllers: [AppController],
   providers: [AppService, MailerService,],

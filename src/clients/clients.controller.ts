@@ -1,6 +1,9 @@
+import {Controller,Get,Post,Body,Param,Put,Res, HttpStatus, NotFoundException, HttpException,Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Response,Express } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
-import {Controller,Get,Post,Body,Param,Put,Res, HttpStatus, NotFoundException, HttpException,Query,} from '@nestjs/common';
-import { Response } from 'express';
+import { extname } from 'path';
 import { ClientsService } from './clients.service';
 import { Client } from 'src/schemas/clients.schema';
 import { ClientDto  } from './dto/clients.dto';
@@ -25,10 +28,30 @@ export class ClientsController {
   //   }
   // }
   @Post('create-account')
-  async createAccount(@Body() clientDto: ClientDto, @Res() res: Response): Promise<{ user: Client; resetLink: string; message: string }> {
+  @UseInterceptors(FileInterceptor('logo', {
+    storage: diskStorage({
+      destination: './uploads/logos', // Chemin de stockage des logos
+      filename: (req, file, callback) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+      },
+    }),
+    fileFilter: (req, file, callback) => {
+      const allowedMIMETypes = ['image/jpeg', 'image/png'];
+      if (!allowedMIMETypes.includes(file.mimetype)) {
+        return callback(new Error('Only JPEG and PNG files are allowed'), false);
+      }
+      callback(null, true);
+    },
+  }))
+  async createAccount(@Body() clientDto: ClientDto, @UploadedFile() logo: Express.Multer.File, @Res() res: Response): Promise<{ user: Client; resetLink: string; message: string }> {
+
     try {
+      clientDto.logo = logo ? `./uploads/logos/${logo.filename}` : ''; 
       const { user, resetLink, message } = await this.service.createAccount(clientDto);
       res.status(HttpStatus.CREATED).json({ message: 'User created successfully', user });
+      
       return { user, resetLink, message };
     } catch (error) {
       if (error.status === HttpStatus.CONFLICT) {

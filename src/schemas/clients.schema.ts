@@ -12,7 +12,8 @@ refClient: string;
 
   @Prop({ default: null })
   matricule_fiscale: string;
-
+  @Prop() 
+  logo: string;
   @Prop({ default: 'physique' })
   type: string; // Peut être 'physique' ou 'morale'
 

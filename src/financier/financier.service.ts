@@ -9,7 +9,7 @@ import { MailerService } from '../mailer/mailer.service';
 import * as crypto from 'crypto';
 import * as generator from 'generate-password';
 import * as validator from 'validator'; 
-//import { SearchDto } from 'src/financier/dto/search.dto';
+import { UpdateDto } from 'src/financier/dto/update.dto';
 
 @Injectable()
 export class FinancierService{
@@ -72,7 +72,14 @@ export class FinancierService{
  if (!isEmailValid) {
    throw new HttpException('Invalid email address', HttpStatus.BAD_REQUEST);
  }
-    
+
+
+ // Check if the email already exists
+ const existingFinancier = await this.financierModel.findOne({ email });
+
+ if (existingFinancier) {
+   throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+ }
     try {
       // Génération du mot de passe aléatoire
       const generatedPassword = generator.generate({
@@ -181,12 +188,12 @@ export class FinancierService{
     return this.financierModel.findOne({ _id: id });
   }
 
-  Update(id: string, body: FinancierDto) {
-    return this.financierModel.findByIdAndUpdate(
-      { _id: id },
-      { $set: body },
-      { new: true },
-    );
+  async update(id: string, updateDto: UpdateDto): Promise<Financier> {
+    const updatedFinancier = await this.financierModel.findByIdAndUpdate(id, updateDto, { new: true }).exec();
+    if (!updatedFinancier) {
+      throw new NotFoundException(`financier  not found`);
+    }
+    return updatedFinancier;
   }
  
   async Search(key: string): Promise<any> {
@@ -199,17 +206,20 @@ export class FinancierService{
             { num_phone: { $regex: key, $options: 'i' } },
             { address: { $regex: key, $options: 'i' } },
             { code_postal: { $regex: key, $options: 'i' } },
-          ],  roles: 'FINANCIER'
+          ],
         }
-      : {  roles: 'FINANCIER'};
+      : {};
 
 
-    const results = await this.financierModel.find(keyword);
-    if (results.length === 0) {
-      throw new Error('no Data');
+   
+      try {
+        const results = await this.financierModel.find(keyword);
+        return results.length > 0 ? results : [];
+      } catch (error) {
+        throw new Error('An error occurred while searching');
+      }
     }
-    return results;
-  }
+    
   
 
 }

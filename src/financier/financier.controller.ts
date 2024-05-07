@@ -5,7 +5,7 @@ import { Response } from 'express';
   import { FinancierService } from './financier.service';
 import { Financier } from 'src/schemas/financier.schema';
 import { SearchDTO } from 'src/financier/dto/search.dto';
-
+import { UpdateDto } from 'src/financier/dto/update.dto';
 
 @Controller('financier')
 export class  FinancierController {
@@ -16,8 +16,8 @@ export class  FinancierController {
         const { user, resetLink, message } = await this.service.createAccount(financierDto);
         res.status(HttpStatus.CREATED).json({ message: 'User created successfully', user });
         return { user, resetLink, message };
-      } catch (error) {
-        if (error.status === HttpStatus.CONFLICT) {
+      }  catch (error) {
+        if (error instanceof HttpException && error.getStatus() === HttpStatus.CONFLICT) {
           res.status(HttpStatus.CONFLICT).json({ message: 'Email already exists, please enter another email' });
         } else {
           res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
@@ -41,11 +41,7 @@ export class  FinancierController {
     FindOne(@Param('id') id: string) {
       return this.service.FindOne(id);
     }
-    @Put('/:id')
-    Update(@Param('id') id: string, @Body() body: FinancierDto) {
-      return this.service.Update(id, body);
-    }
-  
+ 
 
     @Post('/search')
     async Search(@Query() searchDto: SearchDTO) {
@@ -57,5 +53,9 @@ export class  FinancierController {
           error: error.message,
         }, HttpStatus.NOT_FOUND);
       }
+    }
+    @Put(':id')
+    async update(@Param('id') id: string, @Body() updateDto:UpdateDto): Promise<Financier> {
+      return await this.service.update(id,updateDto);
     }
   }

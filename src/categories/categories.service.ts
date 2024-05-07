@@ -1,5 +1,5 @@
 // categories.service.ts
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException,NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Categories, CategoriesDocument } from 'src/schemas/categories.schema';
@@ -31,5 +31,32 @@ export class CategoriesService {
   async findAll() {
     return this.categoriesModel.find();
   }
+  async update(id: string, categoryDto: CreateCategoryDto): Promise<Categories> {
+    const updatedCategory = await this.categoriesModel.findByIdAndUpdate(id, categoryDto, { new: true }).exec();
+    if (!updatedCategory) {
+      throw new NotFoundException(`Category not found`);
+    }
+    return updatedCategory;
+  }
+  async delete(id: string): Promise<boolean> {
+    const deletedCategory = await this.categoriesModel.findByIdAndDelete(id).exec();
+    return !!deletedCategory;
+  }
+  async Search(key: string): Promise<any> {
+    const keyword = key
+      ? {
+          $or: [
+            { Titre_Categorie: { $regex: key, $options: 'i' } },
+            { Description_Categorie: { $regex: key, $options: 'i' } },
+          ],
+        }
+      : {};
 
+    try {
+      const results = await this.categoriesModel.find(keyword);
+      return results.length > 0 ? results : [];
+    } catch (error) {
+      throw new Error('An error occurred while searching');
+    }
+  }
 }

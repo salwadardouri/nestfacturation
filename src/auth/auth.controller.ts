@@ -42,11 +42,11 @@ export class AuthController {
       res.status(HttpStatus.CREATED).json({ message: 'Utilisateur créé avec succès', user, token });
     } catch (error) {
       if (error.status === HttpStatus.CONFLICT) {
-        res.status(HttpStatus.CONFLICT).json({ message: 'L\'email existe déjà' });
-      } else if (error.name === 'ValidationError') { // Par exemple pour les erreurs de validation
+        res.status(HttpStatus.CONFLICT).json({ message: "L'email existe déjà" });
+      } else if (error.name === 'ValidationError') {
         res.status(HttpStatus.BAD_REQUEST).json({ message: 'Erreur de validation', details: error.message });
       } else {
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial' });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Erreur interne du serveur' });
       }
     }
   }

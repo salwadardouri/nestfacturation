@@ -8,8 +8,12 @@ export class User {
   @Prop({required: true})
   fullname: string;
 
-  @Prop({ unique: [true, 'Duplicate email entered'] })
+   @Prop({ unique: true, required: true })
   email: string;
+
+  // New boolean field with default value set to true
+  @Prop({ default: true })
+  status: boolean;
 
   @Prop({required: true})
   password: string;

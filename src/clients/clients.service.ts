@@ -22,7 +22,7 @@ export class ClientsService {
     return validator.isEmail(email);
   }
   async createAccount(clientDto: ClientDto): Promise<{ user: Client; resetLink: string; message: string }> {
-    const { fullname, email, country, num_phone, address, code_postal, roles, matricule_fiscale } = clientDto;
+    const { fullname, email, country, num_phone, address, code_postal, roles, matricule_fiscale, logo  } = clientDto;
 
     // Vérifier la validité de l'e-mail
     const isEmailValid = await this.isEmailValid(email);
@@ -31,6 +31,11 @@ export class ClientsService {
     }
 
     try {
+      const existingClient = await this.clientModel.findOne({ email: clientDto.email });
+
+  if (existingClient) {
+    throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+  }
         // Génération du mot de passe aléatoire
         const generatedPassword = generator.generate({
             length: 10, // Longueur du mot de passe
@@ -67,6 +72,8 @@ export class ClientsService {
             type,
             matricule_fiscale,
             refClient: clientRef,
+            logo,
+
         });
 
         // Logique pour envoyer le lien unique
@@ -87,13 +94,13 @@ export class ClientsService {
             resetLink,
             message: 'Le compte a été créé avec succès. Un lien de réinitialisation de mot de passe a été envoyé à votre adresse e-mail.',
         };
-    } catch (error) {
-        if (error.code === 11000) {
-            throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+      } catch (error) {
+        if (error.code === 11000 || error.status === HttpStatus.CONFLICT) {
+          throw new HttpException('Email already exists', HttpStatus.CONFLICT);
         } else {
-            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
+          throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
+      }
 }
 
 private async generateSequenceNumber(type: string): Promise<number> {
@@ -192,67 +199,7 @@ private async generateSequenceNumber(type: string): Promise<number> {
   async getClients(): Promise<Client[]> {
     return this.clientModel.find({ roles: 'CLIENT' }).exec();
   }
-  // Add(body: ClientDto ) {
-  //   return this.clientModel.create(body);
-  // }
-
-  // async Add(body: ClientDto) {
-  //   // Vérifier si le client a un matricule_fiscale
-  //   let type = 'physique'; // Par défaut, le type est physique
-  //   if (body.matricule_fiscale) {
-  //     type = 'morale';
-  //   }
-
-  //   // Hacher le mot de passe
-  //   const hashedPassword = await bcrypt.hash(body.password, 10);
-
-  //   // Créer un nouvel objet client en fonction du DTO
-  //   const newClient = new this.clientModel({
-  //     ...body,
-  //     type: type,
-  //     password: hashedPassword,
-  //   });
-
-  //   // Sauvegarder le nouveau client dans la base de données
-  //   return newClient.save();
-  // }
-  // async signUpClient(clientDto: ClientDto): Promise<{  user: Client }> {
-  //   const { fullname, email, password, country, num_phone, address, code_postal,roles, matricule_fiscale } = clientDto;
-
-  //   try {
-  //     const hashedPassword = await bcrypt.hash(password, 10);
-
-
-  //     let type = 'physique';
-  //     if (matricule_fiscale) {
-     
-  //       type = 'morale';
-  //     }
-
-  //     const client = await this.clientModel.create({
-  //       fullname,
-  //       email,
-  //       password: hashedPassword,
-  //       country,
-  //       num_phone,
-  //       address,
-  //       code_postal,
-  //       roles,
-  //       type,
-  //       matricule_fiscale,
-  //     });
-
-   
-  //     return { user: client };
-  //   } catch (error) {
-  //     if (error.code === 11000) {
-  //       throw new HttpException('Email already exists', HttpStatus.CONFLICT);
-  //     } else {
-  //       throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
-  //     }
-  //   }
-  //}
-  
+ 
 
 
 

@@ -1,7 +1,9 @@
-import { IsString, IsEmail, MinLength, IsNotEmpty, Matches,ArrayUnique,IsArray ,ArrayNotEmpty} from 'class-validator';
+import { IsString, IsEmail,IsBoolean, MinLength, IsNotEmpty, Matches,ArrayUnique,IsArray ,ArrayNotEmpty} from 'class-validator';
 import { UserRole } from '../roles.enum';
 
 export class ClientDto {
+  @IsBoolean()
+  status = true;
   @IsNotEmpty()
   @IsString()
   readonly fullname: string;
@@ -24,7 +26,7 @@ export class ClientDto {
   @IsNotEmpty()
   @IsString()
   readonly num_phone: number;
-
+   
   @IsNotEmpty()
   @IsString()
   readonly address: string;

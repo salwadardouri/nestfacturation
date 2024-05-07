@@ -1,7 +1,7 @@
-import { IsString, IsEmail, IsOptional, IsNotEmpty,ArrayUnique,IsArray ,ArrayNotEmpty} from 'class-validator';
+import { IsString, IsEmail, MinLength, IsNotEmpty,ArrayUnique,IsArray ,ArrayNotEmpty} from 'class-validator';
 import { UserRole } from 'src/auth/roles.enum';
 
-export class ClientDto {
+export class UpdateDto  {
   @IsNotEmpty()
   @IsString()
   readonly fullname: string;
@@ -10,10 +10,7 @@ export class ClientDto {
   @IsEmail({}, { message: 'Please enter correct email' })
   readonly email: string;
 
-  @IsString()
-  @IsOptional()
-  logo?: string;
-
+ 
   readonly password: string;
 
 
@@ -32,7 +29,7 @@ export class ClientDto {
 
   @IsNotEmpty()
   @IsString()
-  readonly code_postal: string;
+  readonly code_postal:string;
   
   @IsNotEmpty()
   @IsArray()
@@ -40,7 +37,6 @@ export class ClientDto {
   @IsString({ each: true })
   @ArrayNotEmpty({ message: 'Au moins un rôle doit être fourni' })
   roles: UserRole[];
-  readonly matricule_fiscale:string;
-  readonly type:string;
+  
   
 }
