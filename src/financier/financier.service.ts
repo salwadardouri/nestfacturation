@@ -100,6 +100,8 @@ export class FinancierService{
 
   
       const financier = await this.financierModel.create({
+        status:true,
+        updatedPass:false,
         fullname,
         email,
         password: hashedPassword,

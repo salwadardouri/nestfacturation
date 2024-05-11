@@ -10,7 +10,7 @@ export class Tva {
   Pourcent_TVA: string;
 
   @Prop({ type: Number })
-  montant_TTC: number;
+  valeur_TVA: number;
 }
 
 export const TvaSchema = SchemaFactory.createForClass(Tva);

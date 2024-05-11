@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Service, ServiceDocument } from '../schemas/services.schema';
 import { ServicesDto } from './dto/services.dto';
 import { Client, ClientDocument } from '../schemas/clients.schema';
+import {Tva, TvaDocument } from 'src/schemas/tva.schema';
+import {Categories, CategoriesDocument } from 'src/schemas/categories.schema';
+import {Devise, DeviseDocument} from 'src/schemas/devise.schema';
 import * as crypto from 'crypto';
-
-import { Tva, TvaDocument } from '../schemas/tva.schema';
-
 
 @Injectable()
 export class ServicesService {
@@ -15,6 +15,9 @@ export class ServicesService {
   constructor(
     @InjectModel(Service.name) private serviceModel: Model<ServiceDocument>,
     @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
+    @InjectModel(Tva.name) private readonly tvaModel: Model<TvaDocument>,
+    @InjectModel(Categories.name) private readonly categoriesModel: Model<CategoriesDocument>,
+    @InjectModel(Devise.name) private readonly deviseModel: Model<DeviseDocument>,
 
   ) {}
 
@@ -58,13 +61,14 @@ export class ServicesService {
  
 
     // Crée un nouveau service avec les données du DTO
-    const { libelle, quantite, prix_unitaire, tvaId ,montant_HT,categoriesId,deviseId} = createServiceDto;
+    const { libelle, quantite, prix_unitaire,montant_TTC, tvaId ,montant_HT,categoriesId,deviseId} = createServiceDto;
     const newService = new this.serviceModel({
       reference:refS,
       libelle,
       quantite,
       prix_unitaire,
       montant_HT,
+      montant_TTC,
       client: client._id,
       tva: tvaId,
       categories:categoriesId,
@@ -79,12 +83,34 @@ export class ServicesService {
     return await newService.save();
   }
 
- 
+  async updateService(serviceId: string, updateServiceDto: ServicesDto): Promise<Service> {
+    // Convert the service ID to ObjectId
+    const objectId = new Types.ObjectId(serviceId);
+
+    // Find the existing service
+    const existingService = await this.serviceModel.findById(objectId);
+    if (!existingService) {
+      throw new NotFoundException('Service not found');
+    }
+
+
+    // Update other fields
+    existingService.libelle = updateServiceDto.libelle;
+    existingService.quantite = updateServiceDto.quantite;
+    existingService.prix_unitaire = updateServiceDto.prix_unitaire;
+    existingService.montant_HT = updateServiceDto.montant_HT;
+    existingService.montant_TTC = updateServiceDto.montant_TTC;
+
+    // Save the updated service
+    return await existingService.save();
+  }
 
 
 
-
-
+  async delete(id: string): Promise<boolean> {
+    const deletedService = await this.serviceModel.findByIdAndDelete(id).exec();
+    return !!deletedService;
+  }
   async findAll(): Promise<ServicesDto[]> {
     const services = await this.serviceModel.find().populate('client').populate('tva').populate('categories').populate('devise').exec();
     return services.map(service => service.toObject());

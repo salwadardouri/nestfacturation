@@ -14,6 +14,8 @@ export class User {
   // New boolean field with default value set to true
   @Prop({ default: true })
   status: boolean;
+  @Prop({ default: false })
+  updatedPass: boolean;
 
   @Prop({required: true})
   password: string;

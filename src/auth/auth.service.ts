@@ -117,7 +117,7 @@ export class AuthService {
         }
         
       }
-    // service.js
+    
 async requestPasswordReset(email: string): Promise<{ resetCode: string; resetCodeExpiration: Date }> {
   const user = await this.userModel.findOne({ email });
   if (!user) {

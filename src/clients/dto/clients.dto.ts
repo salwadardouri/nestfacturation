@@ -9,10 +9,9 @@ export class ClientDto {
   @IsNotEmpty()
   @IsEmail({}, { message: 'Please enter correct email' })
   readonly email: string;
-
-  @IsString()
-  @IsOptional()
-  logo?: string;
+  
+logo:string;
+ 
 
   readonly password: string;
 
@@ -33,13 +32,8 @@ export class ClientDto {
   @IsNotEmpty()
   @IsString()
   readonly code_postal: string;
-  
-  @IsNotEmpty()
-  @IsArray()
-  @ArrayUnique()
-  @IsString({ each: true })
-  @ArrayNotEmpty({ message: 'Au moins un rôle doit être fourni' })
-  roles: UserRole[];
+  readonly roles: string[];
+
   readonly matricule_fiscale:string;
   readonly type:string;
   

@@ -8,7 +8,7 @@ import { Client, ClientDocument } from '../schemas/clients.schema';
 import * as crypto from 'crypto';
 import * as generator from 'generate-password';
 import * as validator from 'validator'; 
-
+import { UpdatePassDto } from './dto/updatePass.dto';
 @Injectable()
 export class ClientsService {
   private sequenceNumbers: { [key: string]: number } = {};
@@ -22,16 +22,22 @@ export class ClientsService {
     return validator.isEmail(email);
   }
   async createAccount(clientDto: ClientDto): Promise<{ user: Client; resetLink: string; message: string }> {
-    const { fullname, email, country, num_phone, address, code_postal, roles, matricule_fiscale, logo  } = clientDto;
+   // console.log("here");
+    
+    try{const { fullname, email, country, num_phone, address, code_postal,  matricule_fiscale, logo  } = clientDto;
 
     // Vérifier la validité de l'e-mail
+ //   console.log("here 1");
+    
     const isEmailValid = await this.isEmailValid(email);
     if (!isEmailValid) {
         throw new HttpException('Invalid email address', HttpStatus.BAD_REQUEST);
     }
+//    console.log("here 2");
 
     try {
       const existingClient = await this.clientModel.findOne({ email: clientDto.email });
+    //  console.log("here 3");
 
   if (existingClient) {
     throw new HttpException('Email already exists', HttpStatus.CONFLICT);
@@ -48,19 +54,15 @@ export class ClientsService {
         const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
         let type = 'physique';
-        let typePrefix = 'VST-CPHY';
+    
         if (matricule_fiscale) {
             type = 'morale';
-            typePrefix = 'VST-CM';
+           
         }
 
-        // Génération du numéro de séquence
-        const sequenceNumber = await this.generateSequenceNumber(type);
-
-        // Génération du Ref unique
-        const clientRef = `${typePrefix}-${sequenceNumber.toString().padStart(4, '0')}`;
-
         const client = await this.clientModel.create({
+          status:true,
+          updatedPass:false,
             fullname,
             email,
             password: hashedPassword,
@@ -68,10 +70,10 @@ export class ClientsService {
             num_phone,
             address,
             code_postal,
-            roles,
+            roles:['CLIENT'],
             type,
             matricule_fiscale,
-            refClient: clientRef,
+
             logo,
 
         });
@@ -100,24 +102,13 @@ export class ClientsService {
         } else {
           throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
         }
+      }}catch(error){
+        return error.message;
       }
 }
 
-private async generateSequenceNumber(type: string): Promise<number> {
-  // Vérifier si le type existe déjà dans sequenceNumbers, sinon initialiser à 0
-  if (!this.sequenceNumbers[type]) {
-    this.sequenceNumbers[type] = 0;
-  }
-  
-  // Incrémenter le numéro de séquence et le stocker
-  this.sequenceNumbers[type]++;
-  
-  // Formater le numéro de séquence avec 4 chiffres
-  const sequenceNumber = this.sequenceNumbers[type].toString().padStart(4, '0');
-  
-  // Retourner le numéro de séquence converti en nombre
-  return parseInt(sequenceNumber);
-}
+
+
   
   async getEmailFromToken(token: string): Promise<string | null> {
     try {
@@ -145,21 +136,23 @@ private async generateSequenceNumber(type: string): Promise<number> {
     }
 }
 //pour creer un password d'apres le link  , pour  client et  financier  au meme temps 
-  async resetPassword(email: string, newPassword: string): Promise<void> {
-   
-      const client = await this.clientModel.findOne({ email });
+async resetPassword(email: string, newPassword: string): Promise<void> {
+  const client = await this.clientModel.findOne({ email });
 
-      if (!client) {
-        throw new NotFoundException('Client introuvable.');
-      }
-      this.validatePasswordStrength(newPassword);
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      client.password = hashedPassword;
-      await client.save();
-
-  
-    
+  if (!client) {
+    throw new NotFoundException('Client introuvable.');
   }
+
+  if (client.updatedPass) {
+    throw new BadRequestException('Le mot de passe a déjà été créé.');
+  }
+
+  this.validatePasswordStrength(newPassword);
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  client.password = hashedPassword;
+  client.updatedPass = true;
+  await client.save();
+}
 
   FindOne(id: string) {
     return this.clientModel.findOne({ _id: id });
@@ -197,11 +190,24 @@ private async generateSequenceNumber(type: string): Promise<number> {
     return results;
   }
   async getClients(): Promise<Client[]> {
-    return this.clientModel.find({ roles: 'CLIENT' }).exec();
+    return this.clientModel.find().exec();
   }
- 
-
-
+  async updatePass(id: string, updatePassDto: UpdatePassDto): Promise<Client> {
+    try {
+      const client = await this.clientModel.findByIdAndUpdate(
+        id,
+        { updatedPass: true }, // Définir updatedPass à true
+        { new: true },
+      );
+      if (!client) {
+        throw new HttpException('Client not found', HttpStatus.NOT_FOUND);
+      }
+      return client;
+    } catch (error) {
+      throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  
+  }
 
 
  

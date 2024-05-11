@@ -25,7 +25,20 @@ export class MailerService {
       subject: subject,
       text: text,
     };
-    console.error('Email sent successfully');
+    
+    try {
+      await this.transporter.sendMail(mailOptions).then(()=> {
+        console.error('Email sent successfully');
+      }).catch((error) => {
+        console.log('Mail not found', error.message);
+        throw new Error('Failed to send email'); // Optionally re-throw or handle error differently 
+      })
+      
+    } catch (error) {
+      console.log(error.message);
+      
+    }
+    
   
   }
   

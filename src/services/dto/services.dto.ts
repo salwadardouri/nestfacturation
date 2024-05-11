@@ -13,7 +13,10 @@ export class ServicesDto {
 
   @IsNumber()
   prix_unitaire: number;
+  @IsNumber()
   montant_HT: number;
+  @IsNumber()
+  montant_TTC: number;
   @IsMongoId()
   @IsNotEmpty()
   clientId: string; 

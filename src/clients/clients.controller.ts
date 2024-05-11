@@ -8,6 +8,7 @@ import { ClientsService } from './clients.service';
 import { Client } from 'src/schemas/clients.schema';
 import { ClientDto  } from './dto/clients.dto';
 import { SearchDTO } from 'src/clients/dto/search.dto';
+import { UpdatePassDto } from './dto/updatePass.dto';
 @Controller('clients')
 export class ClientsController {
     constructor(private readonly service: ClientsService) {}
@@ -30,7 +31,7 @@ export class ClientsController {
   @Post('create-account')
   @UseInterceptors(FileInterceptor('logo', {
     storage: diskStorage({
-      destination: './uploads/logos', // Chemin de stockage des logos
+      destination: 'C:/Users/HP/Desktop/visto/Nouveau dossier/myapp/uploads/logos', // Chemin de stockage des logos
       filename: (req, file, callback) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
         const ext = extname(file.originalname);
@@ -48,7 +49,7 @@ export class ClientsController {
   async createAccount(@Body() clientDto: ClientDto, @UploadedFile() logo: Express.Multer.File, @Res() res: Response): Promise<{ user: Client; resetLink: string; message: string }> {
 
     try {
-      clientDto.logo = logo ? `./uploads/logos/${logo.filename}` : ''; 
+      clientDto.logo = logo ? `C:/Users/HP/Desktop/visto/Nouveau dossier/myapp/uploads/logos/${logo.filename}` : ''; 
       const { user, resetLink, message } = await this.service.createAccount(clientDto);
       res.status(HttpStatus.CREATED).json({ message: 'User created successfully', user });
       
@@ -98,6 +99,10 @@ export class ClientsController {
         error: error.message,
       }, HttpStatus.NOT_FOUND);
     }
+  }
+  @Put(':id/update-pass')
+  async updatePass(@Param('id') id: string, @Body() updatePassDto: UpdatePassDto): Promise<Client> {
+    return this.service.updatePass(id, updatePassDto);
   }
 }
 

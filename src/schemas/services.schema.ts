@@ -20,6 +20,8 @@ export class Service {
   prix_unitaire: number;
   @Prop({ type:  Number })
   montant_HT: number;
+  @Prop({ type:  Number })
+  montant_TTC: number;
   // @Prop({ type: String, ref: 'Client' }) // Définissez la relation avec le client
   // clientId: string;
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Client' })

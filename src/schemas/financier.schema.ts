@@ -9,7 +9,7 @@ export type FinancierDocument = Financier & Document;
 export class Financier extends User {
     @Prop({ unique: [true, 'Duplicate reference '] })
     refFin: string;
-    @Prop()
+    @Prop() 
     resetToken: string;
     
     @Prop()
