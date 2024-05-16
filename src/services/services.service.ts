@@ -14,10 +14,7 @@ export class ServicesService {
   private sequenceNumbers: { [key: string]: number } = {};
   constructor(
     @InjectModel(Service.name) private serviceModel: Model<ServiceDocument>,
-    @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
-    @InjectModel(Tva.name) private readonly tvaModel: Model<TvaDocument>,
-    @InjectModel(Categories.name) private readonly categoriesModel: Model<CategoriesDocument>,
-    @InjectModel(Devise.name) private readonly deviseModel: Model<DeviseDocument>,
+
 
   ) {}
 
@@ -36,22 +33,11 @@ export class ServicesService {
     // Retourner le numéro de séquence converti en nombre
     return parseInt(sequenceNumber);
   }
-  async create(createServiceDto: ServicesDto): Promise<Service> {
+  async create(ServiceDto: ServicesDto): Promise<Service> {
 
 
-    // Vérifie si le client existe
-    const clientExists = await this.clientModel.exists({
-      _id: createServiceDto.clientId,
-    });
-    if (!clientExists) {
-      throw new NotFoundException('Client not found');
-    }
 
-    // Récupère le client à partir de l'ID
-    const client = await this.clientModel.findById(createServiceDto.clientId);
-    if (!client) {
-      throw new NotFoundException('Client not found');
-    }
+
     
  // Génération du numéro de séquence
  const sequenceNumber = await this.generateSequenceNumber('services');
@@ -61,16 +47,13 @@ export class ServicesService {
  
 
     // Crée un nouveau service avec les données du DTO
-    const { libelle, quantite, prix_unitaire,montant_TTC, tvaId ,montant_HT,categoriesId,deviseId} = createServiceDto;
+    const { libelle, prix_unitaire,categoriesId,deviseId} = ServiceDto;
     const newService = new this.serviceModel({
       reference:refS,
       libelle,
-      quantite,
+      
       prix_unitaire,
-      montant_HT,
-      montant_TTC,
-      client: client._id,
-      tva: tvaId,
+    
       categories:categoriesId,
       devise:deviseId,
 
@@ -83,7 +66,20 @@ export class ServicesService {
     return await newService.save();
   }
 
-  async updateService(serviceId: string, updateServiceDto: ServicesDto): Promise<Service> {
+
+
+
+  async delete(id: string): Promise<boolean> {
+    const deletedService = await this.serviceModel.findByIdAndDelete(id).exec();
+    return !!deletedService;
+  }
+  async findAll(): Promise<ServicesDto[]> {
+    const services = await this.serviceModel.find().populate('categories').populate('devise').exec();
+    return services.map(service => service.toObject());
+  }
+
+
+  async updateService(serviceId: string, ServiceDto: ServicesDto): Promise<Service> {
     // Convert the service ID to ObjectId
     const objectId = new Types.ObjectId(serviceId);
 
@@ -95,24 +91,35 @@ export class ServicesService {
 
 
     // Update other fields
-    existingService.libelle = updateServiceDto.libelle;
-    existingService.quantite = updateServiceDto.quantite;
-    existingService.prix_unitaire = updateServiceDto.prix_unitaire;
-    existingService.montant_HT = updateServiceDto.montant_HT;
-    existingService.montant_TTC = updateServiceDto.montant_TTC;
+    existingService.libelle = ServiceDto.libelle;
+    existingService.reference = ServiceDto.libelle;
+    existingService.prix_unitaire = ServiceDto.prix_unitaire;
+
+    
 
     // Save the updated service
     return await existingService.save();
   }
 
+  async Search(key: string): Promise<any> {
+    const keyword = key
+      ? {
+          $or: [
+            { prix_unitaire: { $regex: key, $options: 'i' } },
+            { libelle: { $regex: key, $options: 'i' } },
+            {reference: { $regex: key, $options: 'i' } },
+            { devise: { $regex: key, $options: 'i' } },
+            { categories: { $regex: key, $options: 'i' } },
+  
+          ],
+        }
+      : {};
 
-
-  async delete(id: string): Promise<boolean> {
-    const deletedService = await this.serviceModel.findByIdAndDelete(id).exec();
-    return !!deletedService;
-  }
-  async findAll(): Promise<ServicesDto[]> {
-    const services = await this.serviceModel.find().populate('client').populate('tva').populate('categories').populate('devise').exec();
-    return services.map(service => service.toObject());
+    try {
+      const results = await this.serviceModel.find(keyword);
+      return results.length > 0 ? results : [];
+    } catch (error) {
+      throw new Error('An error occurred while searching');
+    }
   }
 }

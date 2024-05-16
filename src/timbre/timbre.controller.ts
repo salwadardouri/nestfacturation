@@ -26,18 +26,25 @@ export class TimbreController {
       try {
         const deletedTimbre = await this.Service.delete(id);
         if (!deletedTimbre) {
-          throw new NotFoundException(`TVA with ID ${id} not found`);
+          throw new NotFoundException(`Timbre not found`);
         }
-        return { message: 'TVA deleted successfully' };
+        return { message: 'Timbre deleted successfully' };
       } catch (error) {
         throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
     
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() timbreDto: TimbreDto): Promise<Timbre> {
-    return await this.Service.update(id, timbreDto);
-  }
+    @Put(':id') // Point de terminaison de mise à jour
+    async update(
+      @Param('id') id: string, // ID du service à mettre à jour
+      @Body() TimbreDto: TimbreDto, // Données de mise à jour
+    ): Promise<Timbre> {
+      const updatedTimbre = await this.Service.update(id,TimbreDto); // Appelle le service pour mettre à jour
+      if (!updatedTimbre) {
+        throw new NotFoundException('Service not found');
+      }
+      return updatedTimbre;
+    }
   @Post('/search')
   async Search(@Query() searchDto: SearchDTO) {
     try {

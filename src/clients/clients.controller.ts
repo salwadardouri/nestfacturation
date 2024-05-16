@@ -8,7 +8,7 @@ import { ClientsService } from './clients.service';
 import { Client } from 'src/schemas/clients.schema';
 import { ClientDto  } from './dto/clients.dto';
 import { SearchDTO } from 'src/clients/dto/search.dto';
-import { UpdatePassDto } from './dto/updatePass.dto';
+
 @Controller('clients')
 export class ClientsController {
     constructor(private readonly service: ClientsService) {}
@@ -100,9 +100,6 @@ export class ClientsController {
       }, HttpStatus.NOT_FOUND);
     }
   }
-  @Put(':id/update-pass')
-  async updatePass(@Param('id') id: string, @Body() updatePassDto: UpdatePassDto): Promise<Client> {
-    return this.service.updatePass(id, updatePassDto);
-  }
+
 }
 

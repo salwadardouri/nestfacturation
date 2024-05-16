@@ -2,33 +2,19 @@
 import * as mongoose from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-import { Client } from './clients.schema'; 
+
 
 export type ServiceDocument = Service & mongoose.Document;
 
 @Schema()
 export class Service {
-  @Prop()
+  @Prop({ type: String })
   reference: string;
   @Prop({ type: String })
   libelle: string;
 
   @Prop({ type:  Number })
-  quantite: number;
-
-  @Prop({ type:  Number })
   prix_unitaire: number;
-  @Prop({ type:  Number })
-  montant_HT: number;
-  @Prop({ type:  Number })
-  montant_TTC: number;
-  // @Prop({ type: String, ref: 'Client' }) // Définissez la relation avec le client
-  // clientId: string;
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Client' })
-  client: Client; 
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,ref: 'Tva',})
-  tva: mongoose.Schema.Types.ObjectId;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,ref: 'Devise',})

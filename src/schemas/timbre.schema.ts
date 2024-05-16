@@ -5,8 +5,11 @@ export type TimbreDocument= Timbre & mongoose.Document;
 @Schema()
 export class Timbre  {
 
-    @Prop({ type: String })
-  Valeur: string;
+  @Prop({ type: Number, unique: [true, 'Duplicate Timbre entered'] })
+  Valeur: number;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,ref: 'Devise',})
+  devise: mongoose.Schema.Types.ObjectId;
 }
 
 export const TimbreSchema = SchemaFactory.createForClass(Timbre);

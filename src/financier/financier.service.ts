@@ -47,24 +47,9 @@ export class FinancierService{
   async isEmailValid(email: string): Promise<boolean> {
     return validator.isEmail(email);
   }
-  private async generateSequenceNumber(type: string): Promise<number> {
-    // Vérifier si le type existe déjà dans sequenceNumbers, sinon initialiser à 0
-    if (!this.sequenceNumbers[type]) {
-      this.sequenceNumbers[type] = 0;
-    }
-
-    // Incrémenter le numéro de séquence et le stocker
-    this.sequenceNumbers[type]++;
-
-    // Formater le numéro de séquence avec 4 chiffres
-    const sequenceNumber = this.sequenceNumbers[type].toString().padStart(4, '0');
-
-    // Retourner le numéro de séquence converti en nombre
-    return parseInt(sequenceNumber);
-  }
-
+ 
     async createAccount(financierDto: FinancierDto): Promise<{ user: Financier; resetLink: string; message: string }> {
-      const { fullname, email, country, num_phone, address, code_postal, roles} = financierDto;
+      const { fullname, email, country, num_phone, address, code_postal} = financierDto;
     
  // Vérifier la validité de l'e-mail
 
@@ -92,13 +77,8 @@ export class FinancierService{
   
       const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
-      // Génération du numéro de séquence
-      const sequenceNumber = await this.generateSequenceNumber('financier');
 
-      // Génération du Ref unique
-      const finRef = `VST-FIN-${sequenceNumber.toString().padStart(4, '0')}`;
-
-  
+     
       const financier = await this.financierModel.create({
         status:true,
         updatedPass:false,
@@ -109,8 +89,8 @@ export class FinancierService{
         num_phone,
         address,
         code_postal,
-        roles,
-        refFin: finRef,
+        roles:['FINANCIER'],
+
       });
   
       // Logique pour envoyer le lien unique

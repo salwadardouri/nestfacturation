@@ -1,8 +1,9 @@
 import { Injectable, ConflictException ,NotFoundException} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types  } from 'mongoose';
 import { Timbre, TimbreDocument } from 'src/schemas/timbre.schema';
 import { TimbreDto } from './dto/timbre.dto';
+import { Devise } from 'src/schemas/devise.schema';
 
 
 @Injectable()
@@ -13,29 +14,47 @@ export class TimbreService {
       ) {}
     
       async create(TimbreDto: TimbreDto): Promise<Timbre> {
-        const { Valeur } = TimbreDto;
+        const { Valeur,  deviseId, } = TimbreDto;
     
         // Vérifier si la catégorie existe déjà
         const existingTimbre = await this.TimbreModel.findOne({ Valeur }).exec();
         if (existingTimbre) {
           throw new ConflictException('Duplicate Timbre entered');
         }
+
+        const createdTimbre = new this.TimbreModel({
+          Valeur,
+          devise:deviseId,
     
-        const createdTimbre = new this.TimbreModel(TimbreDto);
+    
+        });
+    
         return createdTimbre.save();
       }
     
-      async findAll() {
-        return this.TimbreModel.find();
+      async findAll(): Promise<TimbreDto[]> {
+        const timbre = await this.TimbreModel.find().populate('devise').exec();
+        return timbre.map(timbre => timbre.toObject());
       }
       async update(id: string, timbreDto: TimbreDto): Promise<Timbre> {
-        const updatedTimbre = await this.TimbreModel.findByIdAndUpdate(id, timbreDto, { new: true }).exec();
-        if (!updatedTimbre) {
-          throw new NotFoundException(`Timbre not found`);
+        try {
+          const objectId = new Types.ObjectId(id);
+          
+          // Trouvez le Timbre existant
+          let updatedTimbre = await this.TimbreModel.findByIdAndUpdate(objectId, { Valeur: timbreDto.Valeur, deviseId: timbreDto.deviseId }, { new: true }).exec();
+      
+          if (!updatedTimbre) {
+            throw new NotFoundException('Timbre not found');
+          }
+      
+          // Enregistrez les modifications
+          return updatedTimbre;
+        } catch (error) {
+          // Gérez les erreurs
+          throw new NotFoundException('Timbre not found');
         }
-        return updatedTimbre;
       }
-    
+      
   async delete(id: string): Promise<boolean> {
     const deletedTimbre = await this.TimbreModel.findByIdAndDelete(id).exec();
     return !!deletedTimbre;

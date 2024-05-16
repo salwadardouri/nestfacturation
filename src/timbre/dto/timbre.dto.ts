@@ -1,8 +1,11 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class TimbreDto {
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-Valeur: string;
+Valeur: number;
+@IsMongoId()
+@IsNotEmpty()
+deviseId: string;
 
 }

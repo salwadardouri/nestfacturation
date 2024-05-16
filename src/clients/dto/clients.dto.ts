@@ -1,5 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsNotEmpty,ArrayUnique,IsArray ,ArrayNotEmpty} from 'class-validator';
-import { UserRole } from 'src/auth/roles.enum';
+import { IsString, IsEmail,  IsNotEmpty} from 'class-validator';
 
 export class ClientDto {
   @IsNotEmpty()

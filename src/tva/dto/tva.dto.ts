@@ -1,11 +1,11 @@
 
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsNotEmpty } from 'class-validator';
 
 export class TvaDto {
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  Pourcent_TVA: string;
+  Pourcent_TVA: number;
 
 
 

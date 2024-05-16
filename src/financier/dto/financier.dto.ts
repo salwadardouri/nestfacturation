@@ -31,12 +31,7 @@ export class FinancierDto  {
   @IsString()
   readonly code_postal:string;
   
-  @IsNotEmpty()
-  @IsArray()
-  @ArrayUnique()
-  @IsString({ each: true })
-  @ArrayNotEmpty({ message: 'Au moins un rôle doit être fourni' })
-  roles: UserRole[];
+  readonly roles: string[];
   
   
 }

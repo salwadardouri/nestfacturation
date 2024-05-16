@@ -8,22 +8,10 @@ export class ServicesDto {
   @IsNotEmpty()
   libelle: string;
 
-  @IsNumber()
-  quantite: number;
 
   @IsNumber()
   prix_unitaire: number;
-  @IsNumber()
-  montant_HT: number;
-  @IsNumber()
-  montant_TTC: number;
-  @IsMongoId()
-  @IsNotEmpty()
-  clientId: string; 
 
-  @IsMongoId()
-  @IsNotEmpty()
-  tvaId: string; 
 
   @IsMongoId()
   @IsNotEmpty()

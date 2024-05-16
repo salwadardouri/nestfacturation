@@ -19,6 +19,7 @@ import { join } from 'path';
 import { TimbreModule } from './timbre/timbre.module';
 
 import { DeviseModule } from './devise/devise.module';
+import { FactureModule } from './facture/facture.module';
 
 
 
@@ -45,7 +46,8 @@ import { DeviseModule } from './devise/devise.module';
       rootPath: join(__dirname, '..', 'uploads'), // Chemin du dossier 'uploads'
       serveRoot: '/uploads', // Serveur statique point de départ
     }),
-    DeviseModule,   ],
+    DeviseModule,
+    FactureModule,   ],
   controllers: [AppController],
   providers: [AppService, MailerService,],
 })

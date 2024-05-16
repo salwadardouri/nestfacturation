@@ -50,6 +50,15 @@ export class AuthController {
       }
     }
   }
+  @Post('request-code-signup')
+  async requestCodesignup(@Body('email') email: string) {
+    const { resetCode} = await this.authService.requestPasswordReset(email);
+    return { message: 'Code sent for creaate account', resetCode };
+  }
+
+
+
+
   @Post('/login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response): Promise<void> {
     try {
@@ -91,6 +100,16 @@ async comparecode(
 
 ) {
   await this.authService.comparecode(email, code);
+  return { message: 'code correct' };
+}
+
+@Post('compare-code-auth')
+async comparecodeauth(
+  @Body('email') email: string,
+  @Body('code') code: string,
+
+) {
+  await this.authService.comparecodeauth(email, code);
   return { message: 'code correct' };
 }
 }

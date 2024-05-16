@@ -11,27 +11,16 @@ export class TvaService {
         @InjectModel(Tva.name)
         private tvaModel: Model<TvaDocument>,
       ) {}
-    
+        
       async create(tvaDto: TvaDto): Promise<Tva> {
-        let { Pourcent_TVA} = tvaDto;
-  // Nettoyer les espaces autour de Pourcent_TVA et vérifier le signe %
-  const cleanedPourcentTVA = Pourcent_TVA.trim();  // Supprime les espaces avant et après
-  const pourcentTVAString = cleanedPourcentTVA.endsWith('%')
-                              ? cleanedPourcentTVA
-                              : `${cleanedPourcentTVA}%`;
-     
-        // Vérifier si la tva existe déjà
-        const existingTva = await this.tvaModel.findOne({ Pourcent_TVA  }).exec();
-        if (existingTva) {
-          throw new ConflictException('Duplicate Tva entered');
-        }
-    
-      
-        // Créez l'objet avec le pourcentage formaté
-        const createdTva = new this.tvaModel({
-          ...tvaDto,
-          Pourcent_TVA: pourcentTVAString
-        });
+        const { Pourcent_TVA } = tvaDto;
+       // Vérifier si la tva existe déjà
+       const existingTva = await this.tvaModel.findOne({ Pourcent_TVA  }).exec();
+       if (existingTva) {
+         throw new ConflictException('Duplicate Tva entered');
+       }
+
+        const createdTva = new this.tvaModel(tvaDto);
         return createdTva.save();
       } catch (error) {
         if (error instanceof ConflictException) {
@@ -39,7 +28,7 @@ export class TvaService {
         }
         throw new InternalServerErrorException('Failed to create TVA');
       }
-    
+
     
       async findAll() {
         return this.tvaModel.find();
@@ -58,21 +47,6 @@ export class TvaService {
     return !!deletedTva;
   }
 
-  // // Méthode pour rechercher des TVA par titre ou pourcentage
-  // async search(query: { title?: string; percent?: string }): Promise<Tva[]> {
-  //   const { title, percent } = query;
-  //   const searchCriteria: any = {};
-
-  //   if (title) {
-  //     searchCriteria['Titre_TVA'] = { $regex: title, $options: 'i' }; // Recherche insensible à la casse
-  //   }
-
-  //   if (percent) {
-  //     searchCriteria['Pourcent_TVA'] = { $regex: percent, $options: 'i' };
-  //   }
-
-  //   return this.tvaModel.find(searchCriteria).exec();
-  // }
   async Search(key: string): Promise<any> {
     const keyword = key
       ? {
