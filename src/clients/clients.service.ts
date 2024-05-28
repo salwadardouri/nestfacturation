@@ -8,6 +8,7 @@ import { Client, ClientDocument } from '../schemas/clients.schema';
 import * as crypto from 'crypto';
 import * as generator from 'generate-password';
 import * as validator from 'validator'; 
+import { UpdateClientDto } from './dto/updateclient.dto';
 @Injectable()
 export class ClientsService {
   private sequenceNumbers: { [key: string]: number } = {};
@@ -46,9 +47,6 @@ if (!isEmailValid) {
     if (matricule_fiscale) {
       type = 'morale';
     }
-
-
-
     const client = await this.clientModel.create({
       status:true,
       updatedPass:false,
@@ -62,6 +60,11 @@ if (!isEmailValid) {
       roles:['CLIENT'],
       type,
       matricule_fiscale,
+      Nom_entreprise: null, 
+      num_fax: null,
+      num_bureau: null,
+      siteweb: null,
+      genre: null,
 
     });
 
@@ -139,18 +142,42 @@ if (!isEmailValid) {
   
     
   }
-
+  async deleteClient(clientId: string): Promise<void> {
+    const result = await this.clientModel.deleteOne({ _id: clientId }).exec();
+    if (result.deletedCount === 0) {
+      throw new NotFoundException(`Client not found`);
+    }
+  }
   FindOne(id: string) {
     return this.clientModel.findOne({ _id: id });
   }
-  Update(id: string, body:  ClientDto) {
-    return this.clientModel.findByIdAndUpdate(
-      { _id: id },
-      { $set: body },
-      { new: true },
-    );
-  }
-  
+  async updateClient(id: string, updateClientDto: UpdateClientDto): Promise<any> {
+    const client = await this.clientModel.findById(id); // Utilisez findById pour rechercher par ID
+    if (!client) {
+      throw new NotFoundException(`Client with ID ${id} not found`);
+    }
+
+    // Mettez à jour les propriétés du client avec les données de l'UpdateClientDto
+    client.fullname = updateClientDto.fullname;
+    client.email = updateClientDto.email;
+    client.status = updateClientDto.status;
+    client.country = updateClientDto.country;
+    client.num_phone = updateClientDto.num_phone;
+    client.address = updateClientDto.address;
+    client.code_postal = updateClientDto.code_postal;
+    client.matricule_fiscale = updateClientDto.matricule_fiscale;
+    client.Nom_entreprise = updateClientDto.Nom_entreprise;
+    client.num_fax = updateClientDto.num_fax;
+    client.num_bureau = updateClientDto.num_bureau;
+    client.siteweb = updateClientDto.siteweb;
+ 
+
+    // Mettez à jour d'autres propriétés si nécessaire...
+
+    // Enregistrez les modifications en utilisant la méthode save
+    return await client.save();
+}
+
   async Search(key: string): Promise<any> {
     const keyword = key
       ? {

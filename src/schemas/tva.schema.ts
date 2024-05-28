@@ -6,7 +6,7 @@ export type TvaDocument = Tva & mongoose.Document;
 @Schema()
 export class Tva {
 
-  @Prop({ type: Number, unique: [true, 'Duplicate Pourcent_TVA entered'] })
+  @Prop({ type: Number})
   Pourcent_TVA: number;
 }
 

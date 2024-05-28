@@ -1,4 +1,4 @@
-import {Controller,Get,Post,Body,Param,Put,Res,Query, HttpStatus, NotFoundException,ValidationPipe , HttpException} from '@nestjs/common';
+import {Controller,Get,Post,Body,Param,Patch,Put,Res,Query,HttpCode,Delete ,HttpStatus, NotFoundException,ValidationPipe , HttpException} from '@nestjs/common';
 import { Response } from 'express';
   import { FinancierDto } from 'src/financier/dto/financier.dto';
   import {ChangePasswordDto } from 'src/financier/dto/change-password.dto';
@@ -6,7 +6,7 @@ import { Response } from 'express';
 import { Financier } from 'src/schemas/financier.schema';
 import { SearchDTO } from 'src/financier/dto/search.dto';
 import { UpdateDto } from 'src/financier/dto/update.dto';
-
+import { UpdateFinancierDto } from './dto/updatefinancier.dto';
 @Controller('financier')
 export class  FinancierController {
     constructor(private readonly service: FinancierService) {}
@@ -24,6 +24,16 @@ export class  FinancierController {
         }
       }
     }
+    @Delete(':id')
+    @HttpCode(HttpStatus.OK) //pour message d'erreur
+    async deleteFinancier(@Param('id') financierId: string): Promise<{ message: string }> {
+      try {
+        await this.service.deleteFinancier(financierId);
+        return { message: 'Client deleted successfully' };
+      } catch (error) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      }
+    }
 
     @Put(':id/change-password')
     async changePassword(@Param('id') financierId: string, @Body() changePasswordDto: ChangePasswordDto) {
@@ -33,6 +43,14 @@ export class  FinancierController {
       }
       return result;
     }
+    
+  @Patch(':id')
+  async updateFinancier(
+    @Param('id') id: string,
+    @Body() updateFinancierDto: UpdateFinancierDto
+  ) {
+    return await this.service.updateFinancier(id, updateFinancierDto);
+  }
     @Get()
     async getFinanciers(): Promise<Financier[]> {
       return this.service.getFinanciers();

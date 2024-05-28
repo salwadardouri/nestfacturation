@@ -1,10 +1,11 @@
-import { Controller, Post, Body, Res, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Res, HttpStatus,Get, Req} from '@nestjs/common';
 import { Response } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
 import { AuthService } from './auth.service';
 
 import { ClientDto } from 'src/clients/dto/clients.dto';
+
 
 //import { CurrentUser } from './decorators/current-user.decorator';
 //@CurrentUser() pour extraire l'utilisateur à partir du jeton JWT dans la demande.
@@ -14,7 +15,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('signupadmin ')
-  async signUp(@Body() signUpDto: SignUpDto, @Res() res: Response): Promise<void> {
+  async signUpAdmin(@Body() signUpDto: SignUpDto, @Res() res: Response): Promise<void> {
     try {
       const { token, user } = await this.authService.signUp(signUpDto);
 
@@ -50,11 +51,6 @@ export class AuthController {
       }
     }
   }
-  @Post('request-code-signup')
-  async requestCodesignup(@Body('email') email: string) {
-    const { resetCode} = await this.authService.requestPasswordReset(email);
-    return { message: 'Code sent for creaate account', resetCode };
-  }
 
 
 
@@ -83,6 +79,7 @@ res.cookie('token', token, { httpOnly: true, secure: true }); // Adjust 'secure'
     const { resetCode, resetCodeExpiration } = await this.authService.requestPasswordReset(email);
     return { message: 'Email sent for password reset', resetCode, resetCodeExpiration };
   }
+  
 @Post('reset-password')
 async resetPassword(
   @Body('email') email: string,
@@ -103,14 +100,9 @@ async comparecode(
   return { message: 'code correct' };
 }
 
-@Post('compare-code-auth')
-async comparecodeauth(
-  @Body('email') email: string,
-  @Body('code') code: string,
-
-) {
-  await this.authService.comparecodeauth(email, code);
-  return { message: 'code correct' };
+@Get('me')
+async getLoggedInUser(@Req() req) {
+  return req.user; // Cela renverra les détails de l'utilisateur actuellement connecté
 }
 }
   // @UseGuards(AuthGuard('jwt'))

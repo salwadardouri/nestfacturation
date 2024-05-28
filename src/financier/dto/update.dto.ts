@@ -14,7 +14,7 @@ export class UpdateDto  {
   readonly password: string;
 
 
-
+  @MinLength(6)
   @IsNotEmpty()
   @IsString()
   readonly  country: string;
@@ -38,5 +38,6 @@ export class UpdateDto  {
   @ArrayNotEmpty({ message: 'Au moins un rôle doit être fourni' })
   roles: UserRole[];
   
-  
+
+
 }

@@ -21,11 +21,46 @@ export class Devis {
   @Prop({ type: Boolean })
   Etat: boolean;
 
-  @Prop({ type: String })
-  Echeance_paiement: string;
+  @Prop()
+  Num_Devis: string;
 
+
+  @Prop({ type:  Number })
+  prix_unitaire: number;
+  @Prop({ type:  Number })
+  montant_HT: number;
+  @Prop({ type:  Number })
+  remise: number;
+
+  
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,ref: 'Tva',})
+  tva: mongoose.Schema.Types.ObjectId;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId,ref: 'Timbre',})
+  timbre: mongoose.Schema.Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,ref: 'Devise',})
+  devise: mongoose.Schema.Types.ObjectId;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,ref: 'Categories',})
+  categories: mongoose.Schema.Types.ObjectId;
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Client' })
   client: Client; // Relation avec la table Client
+  @Prop({ type: String })
+  libelle: string;
+  
+  @Prop({ type:  String })
+  unite: string;
+  @Prop({ type: String, nullable: true })
+  commentaire: string;
+ 
+
+  @Prop({ type:  Number })
+  quantite: number;
 }
 
 export const DevisSchema = SchemaFactory.createForClass(Devis);
+
+

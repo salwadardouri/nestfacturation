@@ -1,9 +1,12 @@
 
-  import { IsString, IsNumber, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsMongoId, IsNotEmpty } from 'class-validator';
 
-export class ServicesDto {
+export class UpdateDto {
   
-
+    @IsString()
+    @IsNotEmpty()
+    reference: string;
+  
   @IsString()
   @IsNotEmpty()
   libelle: string;
@@ -20,7 +23,6 @@ export class ServicesDto {
   @IsMongoId()
   @IsNotEmpty()
   categoriesId : string;
-  @IsMongoId()
-  @IsOptional()
-  tva:string;
+
+
 }

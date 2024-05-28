@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException,BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Service, ServiceDocument } from '../schemas/services.schema';
 import { ServicesDto } from './dto/services.dto';
+import { UpdateDto } from './dto/update.dto';
+
+import * as mongoose from 'mongoose';
 import { Client, ClientDocument } from '../schemas/clients.schema';
 import {Tva, TvaDocument } from 'src/schemas/tva.schema';
+import { Facture, FactureDocument } from 'src/schemas/facture.schema';
 import {Categories, CategoriesDocument } from 'src/schemas/categories.schema';
 import {Devise, DeviseDocument} from 'src/schemas/devise.schema';
 import * as crypto from 'crypto';
@@ -13,59 +17,54 @@ import * as crypto from 'crypto';
 export class ServicesService {
   private sequenceNumbers: { [key: string]: number } = {};
   constructor(
-    @InjectModel(Service.name) private serviceModel: Model<ServiceDocument>,
+    @InjectModel(Service.name) private serviceModel: Model<ServiceDocument>, 
+    @InjectModel(Tva.name) private tvaModel: Model<TvaDocument>,
+    @InjectModel(Facture.name) private factureModel: Model<FactureDocument>,
+
 
 
   ) {}
+  private async generateUniqueSequenceNumber(): Promise<string> {
+    let isUnique = false;
+    let refS: string;
 
-  private async generateSequenceNumber(type: string): Promise<number> {
-    // Vérifier si le type existe déjà dans sequenceNumbers, sinon initialiser à 0
-    if (!this.sequenceNumbers[type]) {
-      this.sequenceNumbers[type] = 0;
+    while (!isUnique) {
+      // Generate sequence number
+      if (!this.sequenceNumbers['services']) {
+        this.sequenceNumbers['services'] = 0;
+      }
+      this.sequenceNumbers['services']++;
+      const sequenceNumber = this.sequenceNumbers['services'].toString().padStart(4, '0');
+      refS = `VST-S-${sequenceNumber}`;
+
+      // Check if the reference already exists
+      const existingService = await this.serviceModel.findOne({ reference: refS }).exec();
+      if (!existingService) {
+        isUnique = true;
+      }
     }
-
-    // Incrémenter le numéro de séquence et le stocker
-    this.sequenceNumbers[type]++;
-
-    // Formater le numéro de séquence avec 4 chiffres
-    const sequenceNumber = this.sequenceNumbers[type].toString().padStart(4, '0');
-
-    // Retourner le numéro de séquence converti en nombre
-    return parseInt(sequenceNumber);
+    return refS;
   }
-  async create(ServiceDto: ServicesDto): Promise<Service> {
 
+  async create(serviceDto: ServicesDto): Promise<Service> {
+    const refS = await this.generateUniqueSequenceNumber();
 
+    const { libelle, prix_unitaire, categoriesId, deviseId, tva } = serviceDto;
 
-
-    
- // Génération du numéro de séquence
- const sequenceNumber = await this.generateSequenceNumber('services');
-
- // Génération du Ref unique
- const refS = `VST-S-${sequenceNumber.toString().padStart(4, '0')}`;
- 
-
-    // Crée un nouveau service avec les données du DTO
-    const { libelle, prix_unitaire,categoriesId,deviseId} = ServiceDto;
     const newService = new this.serviceModel({
-      reference:refS,
+      reference: refS,
       libelle,
-      
       prix_unitaire,
-    
-      categories:categoriesId,
-      devise:deviseId,
-
-
+      categories: categoriesId,
+      devise: deviseId,
+      quantite: null,
+      remise: null,
+      tva: null, 
+      montant_HT: null,
     });
 
- 
-
-    // Enregistre le service dans la base de données
     return await newService.save();
   }
-
 
 
 
@@ -79,7 +78,7 @@ export class ServicesService {
   }
 
 
-  async updateService(serviceId: string, ServiceDto: ServicesDto): Promise<Service> {
+  async updateService(serviceId: string, UpdateDto: UpdateDto): Promise<Service> {
     // Convert the service ID to ObjectId
     const objectId = new Types.ObjectId(serviceId);
 
@@ -88,18 +87,13 @@ export class ServicesService {
     if (!existingService) {
       throw new NotFoundException('Service not found');
     }
-
-
-    // Update other fields
-    existingService.libelle = ServiceDto.libelle;
-    existingService.reference = ServiceDto.libelle;
-    existingService.prix_unitaire = ServiceDto.prix_unitaire;
-
-    
-
-    // Save the updated service
+    existingService.libelle = UpdateDto.libelle;
+    existingService.reference = UpdateDto.reference;
+    existingService.prix_unitaire = UpdateDto.prix_unitaire;
+  
     return await existingService.save();
   }
+ 
 
   async Search(key: string): Promise<any> {
     const keyword = key
@@ -121,5 +115,18 @@ export class ServicesService {
     } catch (error) {
       throw new Error('An error occurred while searching');
     }
+  }
+
+  async getServiceById(id: string): Promise<Service> {
+    let service;
+    try {
+      service = await this.serviceModel.findById(id).exec();
+    } catch (error) {
+      throw new NotFoundException('Service introuvable.');
+    }
+    if (!service) {
+      throw new NotFoundException('Service introuvable.');
+    }
+    return service;
   }
 }

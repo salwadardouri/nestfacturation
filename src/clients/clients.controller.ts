@@ -1,8 +1,8 @@
-import {Controller,Get,Post,Body,Param,Put,Res, HttpStatus, NotFoundException, HttpException,Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {Controller,Get,Post,Body,Param,Patch,Res, Delete,HttpStatus, HttpCode,NotFoundException, HttpException,Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { Response,Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-
+import { UpdateClientDto } from './dto/updateclient.dto';
 import { extname } from 'path';
 import { ClientsService } from './clients.service';
 import { Client } from 'src/schemas/clients.schema';
@@ -74,6 +74,16 @@ export class ClientsController {
       return { message: 'Password create successfully' };
     
   }
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK) //pour message d'erreur
+  async deleteClient(@Param('id') clientId: string): Promise<{ message: string }> {
+    try {
+      await this.service.deleteClient(clientId);
+      return { message: 'Client deleted successfully' };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+    }
+  }
   @Get()
   async getClients(): Promise<Client[]> {
     return this.service.getClients();
@@ -83,12 +93,14 @@ export class ClientsController {
   FindOne(@Param('id') id: string) {
     return this.service.FindOne(id);
   }
-  @Put('/:id')
-  Update(@Param('id') id: string, @Body() body: ClientDto) {
-    return this.service.Update(id, body);
-  }
-    
 
+  @Patch(':id')
+  async updateClient(
+    @Param('id') id: string,
+    @Body() updateClientDto: UpdateClientDto
+  ) {
+    return await this.service.updateClient(id, updateClientDto);
+  }
   @Post('/search')
   async Search(@Query() searchDto: SearchDTO) {
     try {

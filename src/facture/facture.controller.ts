@@ -3,6 +3,7 @@ import { Controller, Post,Put, Body, Get,Delete ,NotFoundException,HttpException
 import { FactureService } from './facture.service';
 import { FactureDto } from 'src/facture/dto/facture.dto';
 
+
 @Controller('facture')
 export class FactureController {
   constructor(private readonly Service: FactureService) {}
@@ -15,12 +16,13 @@ export class FactureController {
       return { success: false, message: error.message, statusCode: 400 };
     }
   }
-  
 
   @Get()
   async findAll(): Promise<FactureDto[]> {
     return this.Service.findAll();
   }
+
+  
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<{ message: string }> {
     try {

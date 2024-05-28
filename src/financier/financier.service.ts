@@ -10,7 +10,7 @@ import * as crypto from 'crypto';
 import * as generator from 'generate-password';
 import * as validator from 'validator'; 
 import { UpdateDto } from 'src/financier/dto/update.dto';
-
+import { UpdateFinancierDto } from './dto/updatefinancier.dto';
 @Injectable()
 export class FinancierService{
   private sequenceNumbers: { [key: string]: number } = {};
@@ -18,7 +18,34 @@ export class FinancierService{
   constructor(
     @InjectModel(Financier.name) private financierModel: Model<FinancierDocument>,private readonly mailerService: MailerService 
   ) {}
+  async deleteFinancier(financierId: string): Promise<void> {
+    const result = await this.financierModel.deleteOne({ _id: financierId }).exec();
+    if (result.deletedCount === 0) {
+      throw new NotFoundException(`Financier not found`);
+    }
+  }
+  async updateFinancier(id: string, updateFinancierDto: UpdateFinancierDto): Promise<any> {
+    const financier = await this.financierModel.findById(id); // Utilisez findById pour rechercher par ID
+    if (!financier) {
+      throw new NotFoundException(`financier with ID ${id} not found`);
+    }
 
+    // Mettez à jour les propriétés du financier avec les données de l'updateFinancierDto
+    financier.fullname = updateFinancierDto.fullname;
+    financier.email = updateFinancierDto.email;
+    financier.status = updateFinancierDto.status;
+    financier.country = updateFinancierDto.country;
+    financier.num_phone = updateFinancierDto.num_phone;
+    financier.address = updateFinancierDto.address;
+    financier.code_postal = updateFinancierDto.code_postal;
+   
+  
+
+    // Mettez à jour d'autres propriétés si nécessaire...
+
+    // Enregistrez les modifications en utilisant la méthode save
+    return await financier.save();
+}
   async changePassword(financierId: string, changePasswordDto: ChangePasswordDto) {
     const { password, newPassword } = changePasswordDto;
 
@@ -140,15 +167,15 @@ export class FinancierService{
   }
   async resetPassword(email: string, newPassword: string): Promise<string> {
     try {
-      const client = await this.financierModel.findOne({ email });
+      const financier = await this.financierModel.findOne({ email });
 
-      if (!client) {
-        throw new NotFoundException('Client introuvable.');
+      if (!financier) {
+        throw new NotFoundException('financier introuvable.');
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      client.password = hashedPassword;
-      await client.save();
+      financier.password = hashedPassword;
+      await financier.save();
 
       return 'Le mot de passe a été réinitialisé avec succès.';
     } catch (error) {

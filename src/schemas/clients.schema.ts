@@ -11,8 +11,7 @@ export class Client extends User {
 
   @Prop({ default: null })
   matricule_fiscale: string;
-  @Prop() 
-  logo: string;
+  
   @Prop({ default: 'physique' })
   type: string; // Peut être 'physique' ou 'morale'
 
@@ -21,5 +20,18 @@ resetToken: string;
 
 @Prop()
 resetTokenExpiration: Date;
+@Prop({ default: null, required: false })
+Nom_entreprise?: string;
+
+@Prop({ default: null, required: false })
+num_fax?: string;
+
+@Prop({ default: null, required: false })
+num_bureau?: string;
+
+@Prop({ default: null, required: false })
+siteweb?: string;
+
 }
+
 export const ClientSchema = SchemaFactory.createForClass(Client);

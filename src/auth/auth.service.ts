@@ -23,6 +23,16 @@ export class AuthService {
      
        
       ) {}
+      async getClientIdFromToken(token: string): Promise<string> {
+        try {
+          const payload = this.jwtService.verify(token);
+          return (payload as any)._id; // Utilisation de la propriété _id du payload
+        } catch (error) {
+          throw new Error('Token invalide'); // Gérer l'erreur en conséquence
+        }
+      }
+      
+      
       async signUp(signUpDto: SignUpDto): Promise<{ token: string, user: User }> {
         const { fullname, email, password, country, num_phone, address, code_postal, roles } = signUpDto;
     
@@ -46,21 +56,7 @@ export class AuthService {
         }
       }
 
-      async requestCodesignup(email: string): Promise<{ resetCode: string;}> {
-        const user = await this.userModel.findOne({ email });
-        if (!user) {
-          throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-        }
-  
-        const resetCode = this.generateRandomCode();
-              user.resetCode = resetCode;
-          await user.save();
-      
-        // Assurez-vous que mailerService est défini dans le constructeur
-        await this.mailerService.sendAuthCode(email, resetCode);
-      
-        return { resetCode}; // Retourne le code de réinitialisation et son expiration
-      }
+
       async signUpClient(clientDto: ClientDto): Promise<{ token: string; user: any }> {
         const { fullname, email, password, country, num_phone, address, code_postal, roles, matricule_fiscale } = clientDto;
 
@@ -145,16 +141,17 @@ async requestPasswordReset(email: string): Promise<{ resetCode: string; resetCod
     throw new HttpException('resendError', HttpStatus.BAD_REQUEST);
   }
   const resetCode = this.generateRandomCode();
-  const resetCodeExpiration = new Date(Date.now() + 60000); // timeout : 60000 miliseconde =1min 
+  const resetCodeExpiration = new Date(Date.now() + 90000); // timeout : 60000 miliseconde =1min 
   user.resetCode = resetCode;
   user.resetCodeExpiration = resetCodeExpiration;
   await user.save();
 
   // Assurez-vous que mailerService est défini dans le constructeur
-  await this.mailerService.sendResetPasswordCode(email, resetCode);
+  await this.mailerService.sendResetPasswordCode(email, resetCode  );
 
   return { resetCode, resetCodeExpiration }; // Retourne le code de réinitialisation et son expiration
 }
+
 
 async resetPassword(email: string, newPassword: string): Promise<void> {
   const user = await this.userModel.findOne({ email });
@@ -188,24 +185,24 @@ async resetPassword(email: string, newPassword: string): Promise<void> {
         user.resetCodeExpiration = null;
         await user.save();
       }
-      async comparecodeauth(email: string, code: string): Promise<void> {
-        const user = await this.userModel.findOne({ email });
+    //   async comparecodeauth(email: string, code: string): Promise<void> {
+    //     const user = await this.userModel.findOne({ email });
 
-        if (!user) {
-            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-        }
+    //     if (!user) {
+    //         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    //     }
 
-        if (user.resetCode !== code ) {
-            // Supprime le compte si le code est incorrect ou expiré
-            await this.userModel.deleteOne({ email });
-            throw new HttpException('Invalid reset code', HttpStatus.BAD_REQUEST);
-        }
+    //     if (user.resetCode !== code ) {
+    //         // Supprime le compte si le code est incorrect ou expiré
+    //         await this.userModel.deleteOne({ email });
+    //         throw new HttpException('Invalid reset code', HttpStatus.BAD_REQUEST);
+    //     }
 
-        // Réinitialise les champs resetCode et resetCodeExpiration
-        user.resetCode = null;
+    //     // Réinitialise les champs resetCode et resetCodeExpiration
+    //     user.resetCode = null;
       
-        await user.save();
-    }
+    //     await user.save();
+    // }
 }
     
     

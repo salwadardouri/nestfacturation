@@ -1,4 +1,4 @@
-import { IsString, IsEmail,  IsNotEmpty} from 'class-validator';
+import { IsString, IsEmail,  IsNotEmpty,IsOptional} from 'class-validator';
 
 export class ClientDto {
   @IsNotEmpty()
@@ -13,6 +13,22 @@ logo:string;
  
 
   readonly password: string;
+@IsOptional()
+  @IsString()
+  Nom_entreprise?: string;
+
+  @IsOptional()
+  @IsString()
+  num_fax?: string;
+
+  @IsOptional()
+  @IsString()
+  num_bureau?: string;
+
+  @IsOptional()
+  @IsString()
+  siteweb?: string;
+
 
 
 
