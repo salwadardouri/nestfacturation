@@ -3,6 +3,8 @@ import { Response,Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { UpdateClientDto } from './dto/updateclient.dto';
+import { ActivatedClientDto } from './dto/activatedclient.dto';
+
 import { extname } from 'path';
 import { ClientsService } from './clients.service';
 import { Client } from 'src/schemas/clients.schema';
@@ -100,6 +102,13 @@ export class ClientsController {
     @Body() updateClientDto: UpdateClientDto
   ) {
     return await this.service.updateClient(id, updateClientDto);
+  }
+  @Patch('activated/:id')
+  async activatedClient(
+    @Param('id') id: string,
+    @Body() activatedClientDto: ActivatedClientDto
+  ) {
+    return await this.service.activatedClient(id, activatedClientDto);
   }
   @Post('/search')
   async Search(@Query() searchDto: SearchDTO) {

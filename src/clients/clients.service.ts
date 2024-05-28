@@ -9,6 +9,7 @@ import * as crypto from 'crypto';
 import * as generator from 'generate-password';
 import * as validator from 'validator'; 
 import { UpdateClientDto } from './dto/updateclient.dto';
+import { ActivatedClientDto } from './dto/activatedclient.dto';
 @Injectable()
 export class ClientsService {
   private sequenceNumbers: { [key: string]: number } = {};
@@ -177,6 +178,18 @@ if (!isEmailValid) {
     // Enregistrez les modifications en utilisant la méthode save
     return await client.save();
 }
+
+async activatedClient(id: string, activatedClientDto: ActivatedClientDto): Promise<any> {
+  const client = await this.clientModel.findById(id);
+  if (!client) {
+    throw new NotFoundException(`Client not found`);
+  }
+
+  client.status = activatedClientDto.status;
+
+  return await client.save();
+}
+
 
   async Search(key: string): Promise<any> {
     const keyword = key
