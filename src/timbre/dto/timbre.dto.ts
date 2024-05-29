@@ -7,5 +7,7 @@ Valeur: number;
 @IsMongoId()
 @IsNotEmpty()
 deviseId: string;
+@IsNotEmpty()
+readonly status?: boolean;
 
 }

@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Categories, CategoriesDocument } from 'src/schemas/categories.schema';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { ActivatedCategoriesDto } from './dto/activatedCategories.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -13,21 +14,35 @@ export class CategoriesService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Categories> {
-    const { Titre_Categorie ,Description_Categorie } = createCategoryDto;
-
+    const { Titre_Categorie, Description_Categorie } = createCategoryDto;
+  
+    // Ajouter la valeur de status à true dans l'objet createCategoryDto
+    const postData = {
+      ...createCategoryDto,
+      status: true,
+    };
+  
     // Vérifier si la catégorie existe déjà
-    const existingCategory = await this.categoriesModel.findOne({ Titre_Categorie,Description_Categorie }).exec();
+    const existingCategory = await this.categoriesModel.findOne({ Titre_Categorie, Description_Categorie, status: true }).exec();
     if (existingCategory) {
       throw new ConflictException('Duplicate category entered');
     }
-
-    const createdCategory = new this.categoriesModel(createCategoryDto);
+  
+    const createdCategory = new this.categoriesModel(postData);
     return createdCategory.save();
   }
-  // async findAll(): Promise<CreateCategoryDto[]> {
-  //   const devis = await this.categoriesModel.find().populate('client').exec();
-  //   return devis.map(devis => devis.toObject());
-  // }
+  
+  async activatedCategories(id: string, activatedCategoriesDto: ActivatedCategoriesDto): Promise<any> {
+    const categories = await this.categoriesModel.findById(id);
+    if (!categories) {
+      throw new NotFoundException(`categorie not found`);
+    }
+  
+    categories.status = activatedCategoriesDto.status;
+  
+    return await categories.save();
+  }
+  
   async findAll() {
     return this.categoriesModel.find();
   }

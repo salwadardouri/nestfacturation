@@ -4,7 +4,7 @@ import { Model, Types  } from 'mongoose';
 import { Timbre, TimbreDocument } from 'src/schemas/timbre.schema';
 import { TimbreDto } from './dto/timbre.dto';
 import { Devise } from 'src/schemas/devise.schema';
-
+import { ActivatedTimbreDto } from './dto/activatedTimbre.dto';
 
 @Injectable()
 export class TimbreService {
@@ -25,7 +25,7 @@ export class TimbreService {
         const createdTimbre = new this.TimbreModel({
           Valeur,
           devise:deviseId,
-    
+    status:true,
     
         });
     
@@ -41,7 +41,7 @@ export class TimbreService {
           const objectId = new Types.ObjectId(id);
           
           // Trouvez le Timbre existant
-          let updatedTimbre = await this.TimbreModel.findByIdAndUpdate(objectId, { Valeur: timbreDto.Valeur, deviseId: timbreDto.deviseId }, { new: true }).exec();
+          let updatedTimbre = await this.TimbreModel.findByIdAndUpdate(objectId, { Valeur: timbreDto.Valeur, deviseId: timbreDto.deviseId , status:timbreDto.status }, { new: true }).exec();
       
           if (!updatedTimbre) {
             throw new NotFoundException('Timbre not found');
@@ -54,6 +54,20 @@ export class TimbreService {
           throw new NotFoundException('Timbre not found');
         }
       }
+      async activatedTimbre(id: string, activatedTimbreDto: ActivatedTimbreDto): Promise<any> {
+        const timbre = await this.TimbreModel.findById(id);
+        if (!timbre) {
+          throw new NotFoundException(`timbre not found`);
+        }
+      
+        timbre.status = activatedTimbreDto.status;
+      
+        return await timbre.save();
+      }
+      
+    
+  
+      
       
   async delete(id: string): Promise<boolean> {
     const deletedTimbre = await this.TimbreModel.findByIdAndDelete(id).exec();

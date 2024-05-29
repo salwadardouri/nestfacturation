@@ -8,6 +8,8 @@ export class Tva {
 
   @Prop({ type: Number})
   Pourcent_TVA: number;
+  @Prop({ default: true })
+  status: boolean;
 }
 
 export const TvaSchema = SchemaFactory.createForClass(Tva);

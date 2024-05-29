@@ -6,8 +6,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
   timestamps: true,
 })
 export class Parametre  {
-  @Prop()
-  ref: string;
+
   @Prop({ required: true })
   Nom_S: string;
 
@@ -28,6 +27,8 @@ export class Parametre  {
 
   @Prop({ required: true })
   Matricule_Fiscale_S: string;
+  @Prop({ default: true })
+  status: boolean;
 }
 
 export const ParametreSchema = SchemaFactory.createForClass(Parametre);

@@ -1,10 +1,10 @@
 // categories.controller.ts
-import { Controller, Post, Body,Query, Get,ConflictException,Param,Put,Delete,NotFoundException ,HttpStatus,HttpException} from '@nestjs/common';
+import { Controller, Post, Body,Query,Patch, Get,ConflictException,Param,Put,Delete,NotFoundException ,HttpStatus,HttpException} from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { Categories } from 'src/schemas/categories.schema';
 import { SearchDTO } from './dto/search.dto';
-
+import { ActivatedCategoriesDto } from './dto/activatedCategories.dto';
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly Service: CategoriesService) {}
@@ -20,6 +20,7 @@ export class CategoriesController {
       throw error;
     }
   }
+  
   @Get()
   async findAll(): Promise<CreateCategoryDto[]> {
     return this.Service.findAll();
@@ -28,6 +29,15 @@ export class CategoriesController {
   async update(@Param('id') id: string, @Body() CategoryDto: CreateCategoryDto): Promise<Categories> {
     return await this.Service.update(id, CategoryDto);
   }
+    
+  @Patch('activated/:id')
+  async activatedCategories(
+    @Param('id') id: string,
+    @Body() activatedCategoriesDto: ActivatedCategoriesDto
+  ) {
+    return await this.Service.activatedCategories(id, activatedCategoriesDto);
+  }
+    
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<{ message: string }> {
     try {

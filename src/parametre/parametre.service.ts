@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { ParametreDto } from './dto/parametre.dto';
 import { Parametre } from 'src/schemas/parametre.schema';
 import * as crypto from 'crypto'; // Importez le module crypto
+import { ActivatedParamDto } from './dto/activatedParam.dto';
 @Injectable()
 export class ParametreService {
   constructor(
@@ -16,16 +17,14 @@ export class ParametreService {
   // }
   async create(parametreDto: ParametreDto) {
     try {
-      // Génération de la référence paramref
-      const timestamp = Date.now();
-      const randomPart = crypto.randomBytes(4).toString('hex'); 
-      const ref = `${timestamp}-${randomPart}`;
-
       // Vérifier si l'e-mail existe déjà dans la base de données
       const existingParametre = await this.parametreModel.findOne({ Email_S: parametreDto.Email_S });
       if (!existingParametre) {
-        // Création du parametre avec la référence paramref
-        const createdParametre = new this.parametreModel({ ...parametreDto, ref });
+        // Ajout du statut par défaut à true
+        const createdParametre = new this.parametreModel({ 
+          ...parametreDto, 
+          status: true // Ajout du champ status ici
+        });
         await createdParametre.save();
         return { message: 'Parametre created successfully', data: createdParametre };
       } else {
@@ -85,4 +84,15 @@ async update(id: string, parametreDto: ParametreDto): Promise<Parametre> {
       throw new Error('An error occurred while searching');
     }
   }
+  async activatedParam(id: string, activatedClientDto: ActivatedParamDto): Promise<any> {
+    const parameter = await this.parametreModel.findById(id);
+    if (!parameter) {
+      throw new NotFoundException(`param not found`);
+    }
+  
+    parameter.status = activatedClientDto.status;
+  
+    return await parameter.save();
+  }
+  
 }

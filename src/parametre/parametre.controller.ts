@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Param, Post, Put, Query , HttpException, HttpStatus , NotFoundException, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query , Patch,HttpException, HttpStatus , NotFoundException, Delete } from '@nestjs/common';
 import { ParametreDto } from './dto/parametre.dto';
 import { ParametreService } from './parametre.service';
 import { Parametre } from 'src/schemas/parametre.schema';
 import { SearchDTO } from './dto/search.dto';
-
+import { ActivatedParamDto } from './dto/activatedParam.dto';
 @Controller('parametre')
 export class ParametreController {
   constructor(private readonly service: ParametreService) {}
@@ -62,5 +62,12 @@ export class ParametreController {
         error: error.message,
       }, HttpStatus.NOT_FOUND);
     }
+  }
+  @Patch('activated/:id')
+  async activatedParam(
+    @Param('id') id: string,
+    @Body() activatedParamDto: ActivatedParamDto
+  ) {
+    return await this.service.activatedParam(id, activatedParamDto);
   }
 }

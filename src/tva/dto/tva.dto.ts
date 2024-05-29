@@ -1,5 +1,5 @@
 
-import { IsNumber, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsNotEmpty,} from 'class-validator';
 
 export class TvaDto {
 
@@ -8,5 +8,7 @@ export class TvaDto {
   Pourcent_TVA: number;
 
 
-
+  @IsNotEmpty()
+  readonly status?: boolean;
+  
 }

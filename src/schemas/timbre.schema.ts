@@ -10,6 +10,8 @@ export class Timbre  {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,ref: 'Devise',})
   devise: mongoose.Schema.Types.ObjectId;
+  @Prop({ default: true })
+  status: boolean;
 }
 
 export const TimbreSchema = SchemaFactory.createForClass(Timbre);

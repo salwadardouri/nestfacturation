@@ -7,4 +7,7 @@ export class CreateCategoryDto {
   Titre_Categorie: string;
   @IsNotEmpty()
   Description_Categorie:string;
+  @IsNotEmpty()
+  readonly status?: boolean;
+  
 }

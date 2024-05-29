@@ -33,11 +33,14 @@ export class Service {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Categories',
   })
+  @Prop({ default: true })
+  status: boolean;
   categories: mongoose.Schema.Types.ObjectId;
 
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Tva' })
   tva: Tva; 
+
 
 }
 

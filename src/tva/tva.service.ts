@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Tva, TvaDocument } from 'src/schemas/tva.schema';
 import { TvaDto } from './dto/tva.dto';
-
+import { ActivatedTvaDto } from './dto/activatedTva.dto';
 
 @Injectable()
 export class TvaService {
@@ -20,7 +20,11 @@ export class TvaService {
          throw new ConflictException('Duplicate Tva entered');
        }
 
-        const createdTva = new this.tvaModel(tvaDto);
+       const createdTva = new this.tvaModel({ 
+        ...tvaDto, 
+        status: true // Ajout du champ status ici
+      });
+
         return createdTva.save();
       } catch (error) {
         if (error instanceof ConflictException) {
@@ -28,7 +32,17 @@ export class TvaService {
         }
         throw new InternalServerErrorException('Failed to create TVA');
       }
-
+      async activatedTva(id: string, activatedTvaDto: ActivatedTvaDto): Promise<any> {
+        const tva = await this.tvaModel.findById(id);
+        if (!tva) {
+          throw new NotFoundException(`tva not found`);
+        }
+      
+        tva.status = activatedTvaDto.status;
+      
+        return await tva.save();
+      }
+      
     
       async findAll() {
         return this.tvaModel.find();

@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Patch,
   Body,
   Get,
   ConflictException,
@@ -15,7 +16,7 @@ import { TvaService } from './tva.service';
 import { TvaDto } from './dto/tva.dto';
 import { Tva } from 'src/schemas/tva.schema';
 import { SearchDTO } from './dto/search.dto';
-
+import { ActivatedTvaDto } from './dto/activatedTva.dto';
 @Controller('tva')
 export class TvaController {
   constructor(private readonly tvaService: TvaService) {}
@@ -55,6 +56,13 @@ export class TvaController {
     } catch (error) {
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+  @Patch('activated/:id')
+  async activatedTva(
+    @Param('id') id: string,
+    @Body() activatedTvaDto: ActivatedTvaDto
+  ) {
+    return await this.tvaService.activatedTva(id, activatedTvaDto);
   }
 
   // @Get('search') // Recherche par titre ou pourcentage
