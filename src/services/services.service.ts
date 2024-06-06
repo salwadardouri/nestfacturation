@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { Service, ServiceDocument } from '../schemas/services.schema';
 import { ServicesDto } from './dto/services.dto';
 import { UpdateDto } from './dto/update.dto';
-
+import { ActivatedServiceDto } from './dto/activatedService.dto';
 import * as mongoose from 'mongoose';
 import { Client, ClientDocument } from '../schemas/clients.schema';
 import {Tva, TvaDocument } from 'src/schemas/tva.schema';
@@ -45,7 +45,16 @@ export class ServicesService {
     }
     return refS;
   }
-
+  async activatedService(id: string, activatedServiceDto: ActivatedServiceDto): Promise<any> {
+    const service = await this.serviceModel.findById(id);
+    if (!service) {
+      throw new NotFoundException(`Service not found`);
+    }
+  
+    service.status = activatedServiceDto.status;
+  
+    return await service.save();
+  }
   async create(serviceDto: ServicesDto): Promise<Service> {
     const refS = await this.generateUniqueSequenceNumber();
 
@@ -61,6 +70,7 @@ export class ServicesService {
       remise: null,
       tva: null, 
       montant_HT: null,
+      status:true,
     });
 
     return await newService.save();
@@ -90,7 +100,8 @@ export class ServicesService {
     existingService.libelle = UpdateDto.libelle;
     existingService.reference = UpdateDto.reference;
     existingService.prix_unitaire = UpdateDto.prix_unitaire;
-  
+    
+    existingService.status = UpdateDto.status;
     return await existingService.save();
   }
  

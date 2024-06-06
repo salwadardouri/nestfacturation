@@ -1,4 +1,4 @@
-import { Injectable,HttpException, HttpStatus,BadRequestException  } from '@nestjs/common';
+import { Injectable,HttpException, HttpStatus,BadRequestException ,NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
@@ -26,109 +26,52 @@ export class AuthService {
       async getClientIdFromToken(token: string): Promise<string> {
         try {
           const payload = this.jwtService.verify(token);
-          return (payload as any)._id; // Utilisation de la propriété _id du payload
+          return (payload as any)._id; // Utilisation de la propriété _id    du payload
         } catch (error) {
           throw new Error('Token invalide'); // Gérer l'erreur en conséquence
         }
       }
-      
-      
-      async signUp(signUpDto: SignUpDto): Promise<{ token: string, user: User }> {
-        const { fullname, email, password, country, num_phone, address, code_postal, roles } = signUpDto;
+      async signUp(signUpDto: ClientDto): Promise<{ accessToken: string, refreshToken: string, user: any }> {
+        const { email, password } = signUpDto;
     
-        try {
-          const hashedPassword = await bcrypt.hash(password, 10);
-    
-          const user = await this.userModel.create({
-            fullname, email, password: hashedPassword, country, num_phone, address, code_postal, roles,
-          });
-    
-          const token = this.jwtService.sign({ id: user._id });
-    
-          return { token, user };
-        } catch (error) {
-          if (error.code === 11000) {
-            // MongoDB duplicate key error (e.g., duplicate email)
-            throw new HttpException('Email already exists', HttpStatus.CONFLICT);
-          } else {
-            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
-          }
+        // Check if email already exists
+        const existingUser = await this.userModel.findOne({ email }) || await this.clientModel.findOne({ email });
+        if (existingUser) {
+          throw new HttpException('Email already exists', HttpStatus.CONFLICT);
         }
-      }
-
-
-      async signUpClient(clientDto: ClientDto): Promise<{ token: string; user: any }> {
-        const { fullname, email, password, country, num_phone, address, code_postal, roles, matricule_fiscale } = clientDto;
-
-
-        // Vérifier la validité de l'e-mail
-        try {
- 
     
-     // Recherche d'un client existant avec cet email
-  const existingClient = await this.clientModel.findOne({ email: clientDto.email });
-
-  if (existingClient) {
-    throw new HttpException("L'email existe déjà", HttpStatus.CONFLICT);
-  }
-  // Vérifiez la force du mot de passe (une validation supplémentaire au cas où)
-          const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
-          if (!strongPasswordPattern.test(password)) {
-            throw new HttpException(
-              'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre, et un caractère spécial',
-              HttpStatus.BAD_REQUEST,
-            );
-          }
+        // Hash the password  
+        const hashedPassword = await bcrypt.hash(password, 10);
+        let user;
     
-          // Hash le mot de passe
-          const hashedPassword = await bcrypt.hash(password, 10);
-    
-          // Détermine le type de client
-          let type = 'physique';
-          if (matricule_fiscale) {
-            type = 'morale';
-          }
-    
-          // Crée le client
-          const client = await this.clientModel.create({
-            updatedPass:true,
-            status:true,
-            fullname,
-            email,
-            password: hashedPassword,
-            country,
-            num_phone,
-            address,
-            code_postal,
-            roles,
-            type,
-            matricule_fiscale,
-          });
-    
-          // Génère le token JWT
-          const token = this.jwtService.sign({ id: client._id });
-    
-          return { token, user: client };
-        } catch (error) {
-          if (error.code === 11000 || error.status === HttpStatus.CONFLICT) {
-            throw new HttpException("L'email existe déjà", HttpStatus.CONFLICT);
-          } else {
-            throw new HttpException("Erreur interne du serveur", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        }
-      }
-    
-    
-      async login(loginDto: LoginDto): Promise<{ token: string, user: User }> {
-        const { email, password } = loginDto;
-        const user = await this.userModel.findOne({ email });
-        if (user && (await bcrypt.compare(password, user.password))) {
-          const token = this.jwtService.sign({ id: user._id });
-          return { token, user };
+        if ('matricule_fiscale' in signUpDto) {
+          // If it's a client, handle Client creation
+          const clientDto = signUpDto as ClientDto;
+          user = await this.clientModel.create({ ...clientDto, password: hashedPassword });
         } else {
+          // If it's an admin or regular user, handle User creation
+          const userDto = signUpDto as SignUpDto;
+          user = await this.userModel.create({ ...userDto, password: hashedPassword });
+        }
+    
+        const accessToken = this.jwtService.sign({ id: user._id });
+        const refreshToken = this.jwtService.sign({ id: user._id }, { expiresIn: '7d' });
+    
+        return { accessToken, refreshToken, user };
+      }
+    
+      async login(loginDto: LoginDto): Promise<{ accessToken: string, refreshToken: string, user: any }> {
+        const { email, password } = loginDto;
+    
+        const user = await this.userModel.findOne({ email }) || await this.clientModel.findOne({ email });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
           throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
         }
-        
+    
+        const accessToken = this.jwtService.sign({ id: user._id });
+        const refreshToken = this.jwtService.sign({ id: user._id }, { expiresIn: '7d' });
+    
+        return { accessToken, refreshToken, user };
       }
     
 async requestPasswordReset(email: string): Promise<{ resetCode: string; resetCodeExpiration: Date }> {
@@ -185,44 +128,19 @@ async resetPassword(email: string, newPassword: string): Promise<void> {
         user.resetCodeExpiration = null;
         await user.save();
       }
-    //   async comparecodeauth(email: string, code: string): Promise<void> {
-    //     const user = await this.userModel.findOne({ email });
 
-    //     if (!user) {
-    //         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    //     }
 
-    //     if (user.resetCode !== code ) {
-    //         // Supprime le compte si le code est incorrect ou expiré
-    //         await this.userModel.deleteOne({ email });
-    //         throw new HttpException('Invalid reset code', HttpStatus.BAD_REQUEST);
-    //     }
-
-    //     // Réinitialise les champs resetCode et resetCodeExpiration
-    //     user.resetCode = null;
-      
-    //     await user.save();
-    // }
+  async getClientByToken(token: string): Promise<User | null> {
+    const decodedToken = this.jwtService.decode(token) as { id: string };
+    if (!decodedToken || !decodedToken.id) {
+      throw new NotFoundException('Invalid token');
+    }
+    const user = await this.userModel.findById(decodedToken.id);
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return user;
+  }
 }
     
-    
-      // async logout(userId: string): Promise<void> {
-      //   await this.userModel.updateOne({ _id: userId }, { refreshToken: null });
-      // }
-      
-        
-    // async signUp(body: SignUpDto):Promise<{ message: string, user?: User }> {
-    //     const { fullname, email, password, country, num_phone, address, code_postal, roles } = body;
-    //     try {
-    //       const hashedPassword = await bcrypt.hash(password, 10);
-    
-    //       const user = await this.userModel.create({fullname,email,password: hashedPassword,country,num_phone,address,code_postal,roles, });
-    //       return { message: 'User created successfully', user };
-    //         } catch (error) {
-    //       if (error.code === 11000) {
-    //         // MongoDB duplicate key error (e.g., duplicate email)
-    //         throw new HttpException('Email already exists', HttpStatus.CONFLICT);
-    //       }
-      // }
-     // }
 

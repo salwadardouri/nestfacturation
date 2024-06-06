@@ -24,7 +24,7 @@ async getAllUsers(): Promise<User[]> {
     return this.userModel.find().exec();
   }
 
-
+  
   // async createUser(createUserDto: CreateUserDto): Promise<User> {
   //   const { fullname, email, password, country, num_phone, address, code_postal, roles } = createUserDto;
 

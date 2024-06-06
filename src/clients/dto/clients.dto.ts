@@ -44,6 +44,7 @@ logo:string;
   @IsString()
   readonly address: string;
 
+  
   @IsNotEmpty()
   @IsString()
   readonly code_postal: string;

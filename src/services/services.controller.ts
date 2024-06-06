@@ -5,12 +5,18 @@ import { ServicesDto } from 'src/services/dto/services.dto';
 import { Service, ServiceSchema } from 'src/schemas/services.schema';
 import { SearchDTO } from './dto/search.dto';
 import { UpdateDto } from './dto/update.dto';
-
+import { ActivatedServiceDto } from './dto/activatedService.dto';
 @Controller('services')
 export class ServicesController {
   constructor(private readonly Service: ServicesService) {}
 
-  
+  @Patch('activated/:id')
+  async activatedService(
+    @Param('id') id: string,
+    @Body() activatedServiceDto: ActivatedServiceDto
+  ) {
+    return await this.Service.activatedService(id, activatedServiceDto);
+  }
   @Post()
   async create(@Body() serviceDto: ServicesDto) {
     return this.Service.create(serviceDto);
@@ -43,11 +49,6 @@ export class ServicesController {
     }
     return updatedService;
   }
-
-
-
-
-
   @Post('/search')
   async Search(@Query() searchDto: SearchDTO) {
     try {

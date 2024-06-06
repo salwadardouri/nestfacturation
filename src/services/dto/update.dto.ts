@@ -12,6 +12,9 @@ export class UpdateDto {
   libelle: string;
 
 
+  @IsNotEmpty()
+  status?: boolean;
+  
   @IsNumber()
   prix_unitaire: number;
 

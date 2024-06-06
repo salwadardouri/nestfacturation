@@ -32,9 +32,9 @@ export class User {
   @Prop({required: true})
   code_postal: string;
 
-  @Prop({ type: [String]})
-  roles: string[];
     // Ajoutez les propriétés resetCode et resetCodeExpiration
+    @Prop({ type: [String], required: true })
+    roles: string[];
     @Prop()
     resetCode: string;
   

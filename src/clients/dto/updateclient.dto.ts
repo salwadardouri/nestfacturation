@@ -1,58 +1,51 @@
-import { IsString, IsEmail, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsNotEmpty, IsBoolean } from 'class-validator';
 
 export class UpdateClientDto {
-@IsNotEmpty()
+  @IsOptional()
   @IsString()
   readonly fullname?: string;
 
-@IsNotEmpty()
+  @IsOptional()
   @IsEmail({}, { message: 'Please enter a correct email' })
   readonly email?: string;
 
-
-
-@IsNotEmpty()
+  @IsOptional()
   @IsString()
   readonly country?: string;
 
-@IsNotEmpty()
+  @IsOptional()
   @IsString()
   readonly num_phone?: string;
 
-@IsNotEmpty()
+  @IsOptional()
   @IsString()
   readonly address?: string;
 
-@IsNotEmpty()
+  @IsOptional()
   @IsString()
   readonly code_postal?: string;
 
-
-@IsOptional()
+  @IsOptional()
   @IsString()
-  readonly matricule_fiscale?: string;
-
-  @IsNotEmpty()
-  readonly status?: boolean;
-  
+  matricule_fiscale?: string;
 
   @IsOptional()
+  @IsBoolean()
+  status?: boolean;
 
+  @IsOptional()
+  @IsString()
   Nom_entreprise?: string;
 
   @IsOptional()
-
+  @IsString()
   num_fax?: string;
 
   @IsOptional()
-
+  @IsString()
   num_bureau?: string;
 
   @IsOptional()
-
+  @IsString()
   siteweb?: string;
-
-
-
-
 }

@@ -116,6 +116,7 @@ if (!isEmailValid) {
       throw new Error('Une erreur est survenue lors de la recherche du client par le token.');
     }
   }
+
   private validatePasswordStrength(password: string): void {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
@@ -152,31 +153,28 @@ if (!isEmailValid) {
   FindOne(id: string) {
     return this.clientModel.findOne({ _id: id });
   }
-  async updateClient(id: string, updateClientDto: UpdateClientDto): Promise<any> {
-    const client = await this.clientModel.findById(id); // Utilisez findById pour rechercher par ID
-    if (!client) {
-      throw new NotFoundException(`Client with ID ${id} not found`);
-    }
+async updateClient(id: string, updateClientDto: UpdateClientDto): Promise<any> {
+  const client = await this.clientModel.findById(id); // Utilisez findById pour rechercher par ID
+  if (!client) {
+    throw new NotFoundException(`Client with id ${id} not found`);
+  }
 
-    // Mettez à jour les propriétés du client avec les données de l'UpdateClientDto
-    client.fullname = updateClientDto.fullname;
-    client.email = updateClientDto.email;
-    client.status = updateClientDto.status;
-    client.country = updateClientDto.country;
-    client.num_phone = updateClientDto.num_phone;
-    client.address = updateClientDto.address;
-    client.code_postal = updateClientDto.code_postal;
-    client.matricule_fiscale = updateClientDto.matricule_fiscale;
-    client.Nom_entreprise = updateClientDto.Nom_entreprise;
-    client.num_fax = updateClientDto.num_fax;
-    client.num_bureau = updateClientDto.num_bureau;
-    client.siteweb = updateClientDto.siteweb;
- 
+  // Mettez à jour les propriétés du client avec les données de l'UpdateClientDto si elles existent
+  if (updateClientDto.fullname !== undefined) client.fullname = updateClientDto.fullname;
+  if (updateClientDto.email !== undefined) client.email = updateClientDto.email;
+  if (updateClientDto.status !== undefined) client.status = updateClientDto.status;
+  if (updateClientDto.country !== undefined) client.country = updateClientDto.country;
+  if (updateClientDto.num_phone !== undefined) client.num_phone = updateClientDto.num_phone;
+  if (updateClientDto.address !== undefined) client.address = updateClientDto.address;
+  if (updateClientDto.code_postal !== undefined) client.code_postal = updateClientDto.code_postal;
+  if (updateClientDto.matricule_fiscale !== undefined) client.matricule_fiscale = updateClientDto.matricule_fiscale;
+  if (updateClientDto.Nom_entreprise !== undefined) client.Nom_entreprise = updateClientDto.Nom_entreprise;
+  if (updateClientDto.num_fax !== undefined) client.num_fax = updateClientDto.num_fax;
+  if (updateClientDto.num_bureau !== undefined) client.num_bureau = updateClientDto.num_bureau;
+  if (updateClientDto.siteweb !== undefined) client.siteweb = updateClientDto.siteweb;
 
-    // Mettez à jour d'autres propriétés si nécessaire...
-
-    // Enregistrez les modifications en utilisant la méthode save
-    return await client.save();
+  // Enregistrez les modifications en utilisant la méthode save
+  return await client.save();
 }
 
 async activatedClient(id: string, activatedClientDto: ActivatedClientDto): Promise<any> {
@@ -216,12 +214,9 @@ async activatedClient(id: string, activatedClientDto: ActivatedClientDto): Promi
     return results;
   }
   async getClients(): Promise<Client[]> {
-    return this.clientModel.find().exec();
+    return this.clientModel.find({ roles: 'CLIENT' }).exec();
   }
-  
-  
 
- 
 
 
 }

@@ -84,13 +84,13 @@ async update(id: string, parametreDto: ParametreDto): Promise<Parametre> {
       throw new Error('An error occurred while searching');
     }
   }
-  async activatedParam(id: string, activatedClientDto: ActivatedParamDto): Promise<any> {
+  async activatedParam(id:  string, activatedParamDto: ActivatedParamDto): Promise<any> {
     const parameter = await this.parametreModel.findById(id);
     if (!parameter) {
       throw new NotFoundException(`param not found`);
     }
   
-    parameter.status = activatedClientDto.status;
+    parameter.status = activatedParamDto.status;
   
     return await parameter.save();
   }

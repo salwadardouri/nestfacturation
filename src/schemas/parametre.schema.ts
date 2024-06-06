@@ -1,7 +1,6 @@
-// parametre.model.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-
-
+import * as mongoose from 'mongoose';
+export type ParametreDocument = Parametre & mongoose.Document;
 @Schema({
   timestamps: true,
 })

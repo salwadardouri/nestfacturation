@@ -8,8 +8,7 @@ import { User } from '../schemas/user.schema';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    @InjectModel(User.name)
-    private userModel: Model<User>,
+    @InjectModel(User.name) private userModel: Model<User>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -17,15 +16,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload) {
+  async validate(payload: any) {
     const { id } = payload;
-
     const user = await this.userModel.findById(id);
 
     if (!user) {
       throw new UnauthorizedException('Login first to access this endpoint.');
     }
-
+   
     return user;
   }
 }

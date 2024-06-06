@@ -9,7 +9,9 @@ export class UpdateFactureDto {
   @IsOptional()
   @IsNumber()
   readonly prix_unitaire: number;
-
+  @IsOptional()
+  @IsString()
+  readonly unite: string;
   @IsOptional()
   @IsNumber()
   readonly quantite: number;

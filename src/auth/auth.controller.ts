@@ -14,15 +14,35 @@ import { ClientDto } from 'src/clients/dto/clients.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('signupadmin ')
-  async signUpAdmin(@Body() signUpDto: SignUpDto, @Res() res: Response): Promise<void> {
+  // @Post('signupadmin ')
+  // async signUpAdmin(@Body() signUpDto: SignUpDto, @Res() res: Response): Promise<void> {
+  //   try {
+  //     const { ton, user } = await this.authService.signUp(signUpDto);
+
+  //     // Setting HttpOnly cookie
+  //     res.cookie('token', token, { httpOnly: true, secure: true }); // Adjust 'secure' based on your deployment environment
+
+  //     res.status(HttpStatus.CREATED).json({ message: 'User created successfully', user, token });
+  //   } catch (error) {
+  //     if (error.status === HttpStatus.CONFLICT) {
+  //       res.status(HttpStatus.CONFLICT).json({ message: 'Email already exists' });
+  //     } else {
+  //       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  //     }
+  //   }
+  // }
+
+  @Post('signupclient')
+  async signUp(@Body() signUpDto:  ClientDto, @Res() res: Response): Promise<void> {
     try {
-      const { token, user } = await this.authService.signUp(signUpDto);
+      const { accessToken, refreshToken, user } = await this.authService.signUp(signUpDto);
 
-      // Setting HttpOnly cookie
-      res.cookie('token', token, { httpOnly: true, secure: true }); // Adjust 'secure' based on your deployment environment
-
-      res.status(HttpStatus.CREATED).json({ message: 'User created successfully', user, token });
+      res.status(HttpStatus.CREATED).json({
+        message: 'User created successfully',
+        user,
+        accessToken,
+        refreshToken,
+      });
     } catch (error) {
       if (error.status === HttpStatus.CONFLICT) {
         res.status(HttpStatus.CONFLICT).json({ message: 'Email already exists' });
@@ -31,49 +51,28 @@ export class AuthController {
       }
     }
   }
-  @Post('signupclient')
-  async signUpClient(@Body() clientDto: ClientDto, @Res() res: Response): Promise<void> {
-    try {
-      const { token, user } = await this.authService.signUpClient(clientDto);
 
-      // Setting HttpOnly cookie
-      res.cookie('token', token, { httpOnly: true, secure: true }); // Adjust 'secure' based on your deployment environment
-
-      
-      res.status(HttpStatus.CREATED).json({ message: 'Utilisateur créé avec succès', user, token });
-    } catch (error) {
-      if (error.status === HttpStatus.CONFLICT) {
-        res.status(HttpStatus.CONFLICT).json({ message: "L'email existe déjà" });
-      } else if (error.name === 'ValidationError') {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: 'Erreur de validation', details: error.message });
-      } else {
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Erreur interne du serveur' });
-      }
-    }
-  }
-
-
-
-
-  @Post('/login')
+  @Post('login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response): Promise<void> {
     try {
-      const { token, user } = await this.authService.login(loginDto);
-// Setting HttpOnly cookie
-res.cookie('token', token, { httpOnly: true, secure: true }); // Adjust 'secure' based on your deployment environment
+      const { accessToken, refreshToken, user } = await this.authService.login(loginDto);
 
-      res.status(HttpStatus.OK).json({ message: 'Login successful', user, token });
+      res.status(HttpStatus.OK).json({
+        message: 'Login successful',
+        user,
+        accessToken,
+        refreshToken,
+      });
     } catch (error) {
       res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
     }
   }
-  
-  @Post('/logout')
-  async logout(@Res({ passthrough: true }) res: Response): Promise<void> {
-    // Effacer le cookie contenant le token
-    res.clearCookie('token');
-    res.status(HttpStatus.OK).json({ message: 'Logout successful' });
-  }
+  // @Post('/logout')
+  // async logout(@Res({ passthrough: true }) res: Response): Promise<void> {
+  //   // Effacer le cookie contenant le token
+  //   res.clearCookie('token');
+  //   res.status(HttpStatus.OK).json({ message: 'Logout successful' });
+  // }
   @Post('reset-password-request')
   async requestPasswordReset(@Body('email') email: string) {
     const { resetCode, resetCodeExpiration } = await this.authService.requestPasswordReset(email);
@@ -104,6 +103,12 @@ async comparecode(
 async getLoggedInUser(@Req() req) {
   return req.user; // Cela renverra les détails de l'utilisateur actuellement connecté
 }
+
+@Get('profile')
+async getClientProfile(@Req() req) {
+  return this.authService.getClientByToken(req.headers.authorization.split(' ')[1]);
+}
+
 }
   // @UseGuards(AuthGuard('jwt'))
   // @Get('/refresh-token')

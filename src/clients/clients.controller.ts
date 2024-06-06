@@ -1,4 +1,4 @@
-import {Controller,Get,Post,Body,Param,Patch,Res, Delete,HttpStatus, HttpCode,NotFoundException, HttpException,Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {Controller,Req ,Get,Post,Body,Param,Patch,Res, Delete,HttpStatus,Put, HttpCode,NotFoundException, HttpException,Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { Response,Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -76,6 +76,7 @@ export class ClientsController {
       return { message: 'Password create successfully' };
     
   }
+ 
   @Delete(':id')
   @HttpCode(HttpStatus.OK) //pour message d'erreur
   async deleteClient(@Param('id') clientId: string): Promise<{ message: string }> {
@@ -96,13 +97,15 @@ export class ClientsController {
     return this.service.FindOne(id);
   }
 
-  @Patch(':id')
+
+  @Put(':id')
   async updateClient(
     @Param('id') id: string,
     @Body() updateClientDto: UpdateClientDto
   ) {
     return await this.service.updateClient(id, updateClientDto);
   }
+  
   @Patch('activated/:id')
   async activatedClient(
     @Param('id') id: string,

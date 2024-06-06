@@ -12,7 +12,7 @@ export class UserController {
   async getUsers(): Promise<User[]> {
     return this.userService.getAllUsers();
   }
-  
+
     // @Post('signup')
   // async signUp(@Body() createUserDto: CreateUserDto): Promise<{ message: string }> {
   //   try {
