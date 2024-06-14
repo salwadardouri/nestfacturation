@@ -2,7 +2,7 @@
 import { Controller, Post,Put, Body, Get,Delete ,NotFoundException,HttpException,HttpStatus,Param} from '@nestjs/common';
 import { FactureService } from './facture.service';
 import { FactureDto } from 'src/facture/dto/facture.dto';
-
+import { UpdateFactureDto  } from './dto/updatefacture.dto';
 
 @Controller('facture')
 export class FactureController {
@@ -22,7 +22,16 @@ export class FactureController {
     return this.Service.findAll();
   }
 
+  @Get('/:id')
+  FindOne(@Param('id') id: string) {
+    return this.Service.getFactureById(id);
+  }
+
   
+  @Put(':id')
+  async updateFacture(@Param('id') id: string, @Body() updatefactureDto: UpdateFactureDto) {
+    return this.Service.updateFacture(id, updatefactureDto);
+  }
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<{ message: string }> {
     try {

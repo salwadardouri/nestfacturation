@@ -92,11 +92,18 @@ export class ClientsController {
     return this.service.getClients();
   }
 
+
   @Get('/:id')
   FindOne(@Param('id') id: string) {
-    return this.service.FindOne(id);
+    return this.service.getClientById(id);
   }
 
+// Assurez-vous que cette route ne passe pas `profile` comme un ID
+// @Get('profile')
+// async getClientProfile(@Req() req) {
+//     const token = req.headers.authorization.split(' ')[1];
+//     return this.service.getClientByToken(token);
+// }
 
   @Put(':id')
   async updateClient(

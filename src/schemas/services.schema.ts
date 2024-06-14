@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Tva } from './tva.schema'; 
+import { Facture } from './facture.schema';
 export type ServiceDocument = Service & mongoose.Document;
 
 @Schema()
@@ -23,6 +24,16 @@ export class Service {
   @Prop({ type: Number })
   montant_HT: number;
 
+  @Prop({ type: Number })
+  valeur_Remise: number;
+  
+  @Prop({ type: Number })
+  montant_HT_Apres_Remise: number;
+  
+  @Prop({ type: Number })
+  valeur_TVA: number;
+  
+
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Devise',
@@ -38,7 +49,6 @@ export class Service {
   unite: string;
 
 
-  
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Tva' })
   tva: Tva; 

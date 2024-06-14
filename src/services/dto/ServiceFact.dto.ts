@@ -22,7 +22,12 @@ export class ServiceFactDto {
   @IsNumber()
   prix_unitaire: number;
   montant_HT: number;
-  montant_TTC: number;
+  @IsNumber()
+  valeur_Remise: number;
+  @IsNumber()
+  valeur_TVA: number;
+  @IsNumber()
+  montant_HT_Apres_Remise: number;
   @IsNumber()
   @IsOptional()
   remise?: number = null;

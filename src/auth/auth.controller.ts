@@ -105,6 +105,10 @@ async getLoggedInUser(@Req() req) {
 }
 
 @Get('profile')
+async getUserProfile(@Req() req) {
+  return this.authService.getUserByToken(req.headers.authorization.split(' ')[1]);
+}
+@Get('profile/Client')
 async getClientProfile(@Req() req) {
   return this.authService.getClientByToken(req.headers.authorization.split(' ')[1]);
 }

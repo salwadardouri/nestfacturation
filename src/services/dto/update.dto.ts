@@ -10,6 +10,9 @@ export class UpdateDto {
   @IsString()
   @IsNotEmpty()
   libelle: string;
+  @IsString()
+  @IsNotEmpty()
+  unite: string;
 
 
   @IsNotEmpty()

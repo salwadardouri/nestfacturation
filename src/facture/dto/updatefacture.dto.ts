@@ -1,26 +1,28 @@
-// update-facture.dto.ts
-import { IsOptional, IsString, IsNumber } from 'class-validator';
+
+import { Type } from 'class-transformer';
+import { IsArray, IsMongoId,IsDate,IsNotEmpty,IsOptional,IsNumber,IsString } from 'class-validator';
+import { ServiceFactDto } from 'src/services/dto/ServiceFact.dto';
 
 export class UpdateFactureDto {
-  @IsOptional()
-  @IsString()
-  readonly tvaId: string;
 
-  @IsOptional()
-  @IsNumber()
-  readonly prix_unitaire: number;
-  @IsOptional()
-  @IsString()
-  readonly unite: string;
-  @IsOptional()
-  @IsNumber()
-  readonly quantite: number;
+  total_TTC: number;
 
-  @IsOptional()
-  @IsNumber()
-  readonly remise: number;
 
-  @IsOptional()
-  @IsNumber()
-  readonly montant_HT: number;
+  Date_Echeance: Date;
+
+
+
+  Date_Fact: Date;
+
+  Etat_delais: string;
+  Status_delais: string;
+  comptant_Reception:number;
+  nombre_jours_retard:number;
+
+  Date_Jour_Actuel :Date;
+
+  montant_Paye:number;
+
+
+  montant_Restant:number;
 }

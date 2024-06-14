@@ -1,23 +1,19 @@
 
 import { Type } from 'class-transformer';
-import { IsArray, IsMongoId } from 'class-validator';
+import { IsArray, IsMongoId,IsDate,IsNotEmpty,IsOptional,IsNumber,IsString } from 'class-validator';
 import { ServiceFactDto } from 'src/services/dto/ServiceFact.dto';
 
 export class FactureDto {
-  
+  @IsNumber()
   total_HT: number;
-
+  @IsNumber()
   total_TVA: number;
-
+  @IsNumber()
   total_Remise: number;
-
+  @IsNumber()
   total_HT_Apres_Remise: number;
-
+  @IsNumber()
   total_TTC: number;
-
-
-
-
   @IsArray()
   @Type(() => ServiceFactDto)
   services: ServiceFactDto[];
@@ -34,5 +30,29 @@ export class FactureDto {
   clientid: string;
 
   @IsMongoId()
-  parametreid: string;
+  parametreid: string; 
+
+
+  Date_Echeance: Date;
+
+
+
+  Etat_delais: string;
+
+
+  Status_delais: string;
+
+
+  nombre_jours_retard?: number = null;
+
+  comptant_Reception?: number = null;
+
+  Date_Jour_Actuel?: Date = null;
+
+
+  montant_Paye?: number = null;
+
+ 
+
+  montant_Restant?: number = null;
 }

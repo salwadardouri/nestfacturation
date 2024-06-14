@@ -6,6 +6,7 @@ import { Client, ClientSchema } from '../schemas/clients.schema';
 
 import { MailerService } from '../mailer/mailer.service';
 
+import { JwtService } from '@nestjs/jwt';
 @Module({
   imports: [
   MongooseModule.forFeature([
@@ -13,6 +14,7 @@ import { MailerService } from '../mailer/mailer.service';
   ]),
   ],
   controllers: [ClientsController],
-  providers: [ClientsService,MailerService]
+  providers: [ClientsService,MailerService,JwtService ]
+
 })
 export class ClientsModule {}

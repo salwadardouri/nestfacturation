@@ -21,6 +21,8 @@ import { TimbreModule } from './timbre/timbre.module';
 import { DeviseModule } from './devise/devise.module';
 import { FactureModule } from './facture/facture.module';
 
+import { ScheduleModule } from '@nestjs/schedule';
+
 
 
 @Module({
@@ -29,6 +31,7 @@ import { FactureModule } from './facture/facture.module';
       envFilePath: '.env',
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     
     MongooseModule.forRoot(process.env.DB_URI),
     AuthModule,
@@ -49,6 +52,7 @@ import { FactureModule } from './facture/facture.module';
     DeviseModule,
     FactureModule,   ],
   controllers: [AppController],
-  providers: [AppService, MailerService,],
+  providers: [AppService, MailerService],
+
 })
 export class AppModule {}

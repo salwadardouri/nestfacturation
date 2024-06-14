@@ -130,12 +130,34 @@ async resetPassword(email: string, newPassword: string): Promise<void> {
       }
 
 
-  async getClientByToken(token: string): Promise<User | null> {
+  async getUserByToken(token: string): Promise<User | null> {
     const decodedToken = this.jwtService.decode(token) as { id: string };
     if (!decodedToken || !decodedToken.id) {
       throw new NotFoundException('Invalid token');
     }
     const user = await this.userModel.findById(decodedToken.id);
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return user;
+  }
+
+  async getClientByToken(token: string): Promise<Client | null> {
+    const decodedToken = this.jwtService.decode(token) as { id: string };
+    if (!decodedToken || !decodedToken.id) {
+      throw new NotFoundException('Invalid token');
+    }
+      const user = await this.clientModel.findById(decodedToken.id) .populate({
+      path: 'facture',
+      populate: [
+        { path: 'services' },
+        { path: 'devise' },
+        { path: 'timbre' },
+        { path: 'client' },
+        { path: 'parametre' },
+      ]
+    })
+    .exec();
     if (!user) {
       throw new NotFoundException('user not found');
     }

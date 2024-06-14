@@ -58,12 +58,13 @@ export class ServicesService {
   async create(serviceDto: ServicesDto): Promise<Service> {
     const refS = await this.generateUniqueSequenceNumber();
 
-    const { libelle, prix_unitaire, categoriesId, deviseId, tva } = serviceDto;
+    const { libelle,unite ,prix_unitaire, categoriesId, deviseId, tva } = serviceDto;
 
     const newService = new this.serviceModel({
       reference: refS,
       libelle,
       prix_unitaire,
+      unite,
       categories: categoriesId,
       devise: deviseId,
       quantite: null,
@@ -100,7 +101,7 @@ export class ServicesService {
     existingService.libelle = UpdateDto.libelle;
     existingService.reference = UpdateDto.reference;
     existingService.prix_unitaire = UpdateDto.prix_unitaire;
-    
+    existingService.unite = UpdateDto.unite;
     existingService.status = UpdateDto.status;
     return await existingService.save();
   }

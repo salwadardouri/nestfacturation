@@ -19,5 +19,9 @@ export class ServicesDto {
   categoriesId : string;
   @IsMongoId()
   @IsOptional()
-  tva:string;
+  tva:string; 
+   @IsString()
+  @IsNotEmpty()
+  unite: string;
+
 }

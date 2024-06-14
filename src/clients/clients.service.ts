@@ -150,9 +150,50 @@ if (!isEmailValid) {
       throw new NotFoundException(`Client not found`);
     }
   }
-  FindOne(id: string) {
-    return this.clientModel.findOne({ _id: id });
+  async getClientById(id: string): Promise<Client> {
+    const client = await this.clientModel.findById(id)
+ 
+      .populate({
+        path: 'facture',
+        populate: [
+          { path: 'services' },
+          { path: 'devise' },
+          { path: 'timbre' },
+          { path: 'client' },
+          { path: 'parametre' },
+        ]
+      })
+      .exec();
+
+    if (!client) {
+      throw new NotFoundException(`Client introuvable`);
+    }
+
+    return client;
   }
+//     async getClientByToken(token: string): Promise<Client | null> {
+//     const decodedToken = this.jwtService.decode(token) as { id: string };
+//     if (!decodedToken || !decodedToken.id) {
+//       throw new NotFoundException('Invalid token');
+//     }
+
+//     const user = await this.clientModel.findById(decodedToken.id) .populate({
+//       path: 'facture',
+//       populate: [
+//         { path: 'services' },
+//         { path: 'devise' },
+//         { path: 'timbre' },
+//         { path: 'client' },
+//         { path: 'parametre' },
+//       ]
+//     })
+//     .exec();
+//     if (!user) {
+//       throw new NotFoundException('Client not found');
+//     }
+//     return user;
+// }
+
 async updateClient(id: string, updateClientDto: UpdateClientDto): Promise<any> {
   const client = await this.clientModel.findById(id); // Utilisez findById pour rechercher par ID
   if (!client) {

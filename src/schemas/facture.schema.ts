@@ -10,14 +10,30 @@ export type FactureDocument = Facture & mongoose.Document;
 export class Facture {
   @Prop({ type: String })
   Num_Fact: string;
-
+  
   @Prop({ type: Date })
   Date_Fact: Date;
 
+
+  @Prop({ type: Date })
+  Date_Echeance: Date;
+  @Prop({ type: Date })
+  Date_Jour_Actuel: Date;
+  @Prop({ type: String })
+  Status_delais: string;
+  @Prop({ type: String })
+  Etat_delais: string;
   @Prop({ type:  Number })  
-  montant_TTC: number;
+  nombre_jours_retard: number;
+  @Prop({ type:  Number })  
+  comptant_Reception: number;
+
   @Prop({ type:  Number })  
   total_TTC: number;
+  @Prop({ type:  Number })  
+montant_Paye: number;
+@Prop({ type:  Number })  
+  montant_Restant: number;  
   @Prop({ type:  Number })  
   total_HT: number;
 
