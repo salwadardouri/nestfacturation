@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { User } from './user.schema';
 import * as mongoose from 'mongoose';
-import {  Facture } from './facture.schema'; 
+
 export type ClientDocument = Client & Document;
 
 @Schema({collection:'users',timestamps:true})
@@ -37,7 +37,8 @@ siteweb?: string;
 @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Facture' }])
 facture: mongoose.Schema.Types.ObjectId[];
 
-
+@Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Notification' }])
+  notifications: mongoose.Schema.Types.ObjectId[];
 
 }
 

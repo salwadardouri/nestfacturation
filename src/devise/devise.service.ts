@@ -8,7 +8,7 @@ import {
   import { Model } from 'mongoose';
   import { Devise, DeviseDocument } from 'src/schemas/devise.schema';
   import { DeviseDto } from './dto/devise.dto';
-  
+  import { ActivatedDeviseDto } from './dto/activatedDevise.dto';
   @Injectable()
   export class DeviseService {
     constructor(
@@ -25,10 +25,25 @@ import {
         throw new ConflictException('Duplicate Devise entered');
       }
   
-      const createdDevise = new this.deviseModel(deviseDto);
+
+      const createdDevise = new this.deviseModel({
+        Nom_D,
+        Symbole,
+  status:true,
+  
+      });
       return createdDevise.save();
     }
-  
+    async activatedDevise(id: string, activatedDeviseDto: ActivatedDeviseDto): Promise<any> {
+      const devise= await this.deviseModel.findById(id);
+      if (!devise) {
+        throw new NotFoundException(` devisenot found`);
+      }
+    
+      devise.status = activatedDeviseDto.status;
+    
+      return await devise.save();
+    }
     async findAll() {
       return this.deviseModel.find().exec();
     }

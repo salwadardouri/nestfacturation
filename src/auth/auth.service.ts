@@ -1,4 +1,4 @@
-import { Injectable,HttpException, HttpStatus,BadRequestException ,NotFoundException } from '@nestjs/common';
+import { Injectable,HttpException, HttpStatus,BadRequestException ,NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
@@ -162,6 +162,53 @@ async resetPassword(email: string, newPassword: string): Promise<void> {
       throw new NotFoundException('user not found');
     }
     return user;
+  }
+  async ModifierPassword(
+    email: string,
+    Password: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    try {
+   
+
+      const user = await this.userModel.findOne({ email });
+
+      if (!user) {
+        console.log('User not found');
+        throw new NotFoundException('User not found');
+      }
+
+      const isPasswordMatched = await bcrypt.compare(
+        Password,
+        user.password,
+      );
+      if (!isPasswordMatched) {
+        console.log('Incorrect old password');
+        throw new UnauthorizedException('Incorrect old password');
+      }
+
+      if (Password === newPassword) {
+        console.log("Le nouveau mot de passe est identique à l'ancien");
+        throw new BadRequestException(
+          "The new password cannot be the same as the old one.",
+        );
+      }
+
+      // Mettre à jour le mot de passe avec le nouveau mot de passe hashé
+      user.password = await bcrypt.hash(newPassword, 10);
+
+      // Sauvegardez les modifications dans la base de données
+      await user.save();
+
+      console.log('Password successfully changed.');
+      return { message: 'Password successfully changed.' };
+    } catch (error) {
+      console.error('Error changing password :', error);
+      throw new HttpException(
+        "An error occurred while changing the password",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
     

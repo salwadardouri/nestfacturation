@@ -32,27 +32,7 @@ export class FactureDto {
   @IsMongoId()
   parametreid: string; 
 
-
-  Date_Echeance: Date;
-
-
-
-  Etat_delais: string;
-
-
-  Status_delais: string;
-
-
-  nombre_jours_retard?: number = null;
-
-  comptant_Reception?: number = null;
-
-  Date_Jour_Actuel?: Date = null;
-
-
-  montant_Paye?: number = null;
-
  
 
-  montant_Restant?: number = null;
+
 }

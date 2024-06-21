@@ -7,7 +7,7 @@ export class ServicesDto {
   @IsString()
   @IsNotEmpty()
   libelle: string;
-  @IsNotEmpty()
+
   readonly status?: boolean;
   @IsNumber()
   prix_unitaire: number;

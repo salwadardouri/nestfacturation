@@ -22,6 +22,12 @@ import { DeviseModule } from './devise/devise.module';
 import { FactureModule } from './facture/facture.module';
 
 import { ScheduleModule } from '@nestjs/schedule';
+import { PaiementModule } from './paiement/paiement.module';
+import { EcheanceController } from './echeance/echeance.controller';
+import { EcheanceService } from './echeance/echeance.service';
+import { EcheanceModule } from './echeance/echeance.module';
+
+import { NotificationModule } from './notification/notification.module';
 
 
 
@@ -50,9 +56,12 @@ import { ScheduleModule } from '@nestjs/schedule';
       serveRoot: '/uploads', // Serveur statique point de départ
     }),
     DeviseModule,
-    FactureModule,   ],
-  controllers: [AppController],
-  providers: [AppService, MailerService],
+    FactureModule,
+    PaiementModule,
+    EcheanceModule,
+    NotificationModule,   ],
+  controllers: [AppController, EcheanceController],
+  providers: [AppService, MailerService, EcheanceService],
 
 })
 export class AppModule {}

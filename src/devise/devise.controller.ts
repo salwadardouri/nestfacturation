@@ -11,12 +11,13 @@ import {
     Delete,
     Param,
     NotFoundException,
+    Patch
   } from '@nestjs/common';
   import { DeviseService } from './devise.service';
   import { DeviseDto } from './dto/devise.dto';
   import { Devise } from 'src/schemas/devise.schema';
   import { SearchDTO } from './dto/search.dto';
-  
+  import { ActivatedDeviseDto } from './dto/activatedDevise.dto';
   @Controller('devise')
   export class DeviseController {
     constructor(private readonly deviseService: DeviseService) {}
@@ -36,7 +37,14 @@ import {
         );
       }
     }
-  
+    @Patch('activated/:id')
+  async activatedTimbre(
+    @Param('id') id: string,
+    @Body() activatedDeviseDto: ActivatedDeviseDto
+  ) {
+    return await this.deviseService.activatedDevise(id, activatedDeviseDto);
+  }
+    
     @Get()
     async findAll(): Promise<Devise[]> { // Utilisation du type correct pour le retour
       return await this.deviseService.findAll(); // Utilisation de `await`

@@ -8,12 +8,11 @@ import * as numberToWords from 'number-to-words';
 import { Client, ClientDocument} from 'src/schemas/clients.schema';
 import { Tva, TvaDocument} from 'src/schemas/tva.schema';
 import { Timbre, TimbreDocument} from 'src/schemas/timbre.schema';
-import { Parametre, ParametreDocument } from 'src/schemas/parametre.schema';
+import { Paiement, PaiementDocument } from 'src/schemas/paiement.schema';
 import { Service, ServiceDocument } from 'src/schemas/services.schema';
 import { ServiceFactDto } from 'src/services/dto/ServiceFact.dto';
-import { differenceInDays } from 'date-fns';
-// package pour actualiser la date jour dans labase de donnee en tamps reel 
-import { Cron, CronExpression } from '@nestjs/schedule';
+
+
 
 @Injectable()
 export class FactureService {
@@ -22,8 +21,7 @@ export class FactureService {
     @InjectModel(Facture.name) private factureModel: Model<FactureDocument>,
     @InjectModel(Service.name) private serviceModel: Model<ServiceDocument>,
     @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
-
-    
+    @InjectModel(Paiement.name) private paiementModel: Model<PaiementDocument>,
 
   ) {}
   private async generateUniqueNumFact(): Promise<string> {
@@ -80,19 +78,7 @@ export class FactureService {
   //   return await newFacture.save();
   // }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT) // Exécuter tous les jours à minuit
-  async updateCurrentDate() {
-    const currentDate = new Date();
-    
-    // Mettre à jour Date_Jour_Actuel dans la base de données pour toutes les factures
-    await this.factureModel.updateMany({}, { Date_Jour_Actuel: currentDate });
-    
-    console.log(`Date_Jour_Actuel mis à jour avec la date ${currentDate}`);
-  }
   
-  getCurrentDate(): Date {
-    return new Date(); // Retourne la date actuelle
-  }
   
   async create(factureDto: FactureDto): Promise<Facture> {
     console.log('Données reçues dans le service:', factureDto);
@@ -132,18 +118,13 @@ export class FactureService {
     console.log(savedServices);
     const serviceIds = savedServices.map((service) => service._id);
   
-    const { timbreid, clientid, parametreid, deviseid, Date_Echeance, comptant_Reception, nombre_jours_retard, Date_Jour_Actuel, montant_Paye, montant_Restant, ...factureData } = factureDto;
+    const { timbreid, clientid, parametreid, deviseid, ...factureData } = factureDto;
   
     const total_TTC = factureData.total_TTC;
     const total_TTC_Lettre = numberToWords.toWords(total_TTC);
     
-     // Obtenez Date_Jour_Actuel à partir du service DateService
-    const currentDate = await this.getCurrentDate();
 
-    // Calcul du nombre de jours de retard
-    const nombre_jours_retard_Calculated = differenceInDays(new Date(Date_Echeance), currentDate);
-     const Date_Fact = new Date();
-const comptant_Reception_Calculated = differenceInDays(new Date(Date_Echeance), Date_Fact);
+
     const createdFacture = new this.factureModel({
       ...factureData,
       total_TTC_Lettre,
@@ -154,14 +135,8 @@ const comptant_Reception_Calculated = differenceInDays(new Date(Date_Echeance), 
       parametre: parametreid,
       Date_Fact: new Date(),
       Num_Fact,
-      Date_Echeance,
-      Etat_delais:'Unpaid',
-      Status_delais:  'Pending' ,
-      nombre_jours_retard: nombre_jours_retard_Calculated < 0 ? nombre_jours_retard_Calculated : 0,
-      Date_Jour_Actuel: currentDate,
-      comptant_Reception: comptant_Reception_Calculated,
-      montant_Paye: montant_Paye || null,
-      montant_Restant: montant_Restant || null,
+      
+
     });
   
     const savedFacture = await createdFacture.save();
@@ -196,8 +171,14 @@ const comptant_Reception_Calculated = differenceInDays(new Date(Date_Echeance), 
       })
       .populate('timbre')
       .populate('parametre')
+      .populate({
+        path: 'paiement',
+        populate: {
+          path: 'echeances',
+          model: 'Echeance'
+        }
+      })
       .exec();
-
     return factures.map(facture => facture.toObject());
   }
 
@@ -208,6 +189,13 @@ const comptant_Reception_Calculated = differenceInDays(new Date(Date_Echeance), 
       .populate('timbre')
       .populate('client')
       .populate('parametre')
+      .populate({
+        path: 'paiement',
+        populate: {
+          path: 'echeances',
+          model: 'Echeance'
+        }
+      })
       .exec();
 
     if (!facture) {
@@ -216,4 +204,23 @@ const comptant_Reception_Calculated = differenceInDays(new Date(Date_Echeance), 
 
     return facture;
   }
+  // async findByIdWithPaiements(id: string): Promise<Facture> {
+  //   return this.factureModel.findById(id)
+  //   .populate('devise')
+  //   .populate('timbre')
+  //   .populate('client')
+  //   .populate('parametre')
+  //     .populate({
+  //       path: 'services',
+  //       model: 'Service'
+  //     })
+  //     .populate({
+  //       path: 'paiements',
+  //       populate: {
+  //         path: 'echeances',
+  //         model: 'Echeance'
+  //       }
+  //     })
+  //     .exec();
+  // }
 }

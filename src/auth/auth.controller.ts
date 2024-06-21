@@ -1,12 +1,10 @@
-import { Controller, Post, Body, Res, HttpStatus,Get, Req} from '@nestjs/common';
+import { Controller, Post, Body, Res, HttpStatus,UnauthorizedException,Get,HttpException, Req,NotFoundException,BadRequestException} from '@nestjs/common';
 import { Response } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
 import { AuthService } from './auth.service';
-
 import { ClientDto } from 'src/clients/dto/clients.dto';
-
-
+import { ModifierPasswordDto } from './dto/ModifierPassword.dto';
 //import { CurrentUser } from './decorators/current-user.decorator';
 //@CurrentUser() pour extraire l'utilisateur à partir du jeton JWT dans la demande.
 
@@ -112,7 +110,36 @@ async getUserProfile(@Req() req) {
 async getClientProfile(@Req() req) {
   return this.authService.getClientByToken(req.headers.authorization.split(' ')[1]);
 }
+@Post('ModifierPassword')
+async ModifierPassword(
+  @Body() modifierPasswordDto: ModifierPasswordDto,
+): Promise<{ message: string }> {
+  try {
+    // Appelez la méthode de service pour modifier le mot de passe
+    await this.authService.ModifierPassword(
+      modifierPasswordDto.email,
+      modifierPasswordDto.Password,
+      modifierPasswordDto.newPassword,
+    );
 
+    return { message: 'Password successfully changed.' };
+  } catch (error) {
+    let errorMessage =
+      "An error occurred while changing the password. Please ensure that your old password is correct and that your new password is different from the old one.";
+
+    if (error instanceof NotFoundException) {
+      errorMessage = 'User not found';
+    } else if (error instanceof UnauthorizedException) {
+      errorMessage = 'Incorrect old password';
+    } else if (error instanceof BadRequestException) {
+      errorMessage =
+        "The new password cannot be the same as the old one.";
+    }
+
+    // Gérer les erreurs de manière appropriée
+    throw new HttpException(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
 }
   // @UseGuards(AuthGuard('jwt'))
   // @Get('/refresh-token')

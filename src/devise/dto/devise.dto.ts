@@ -10,5 +10,6 @@ export class DeviseDto {
   @IsNotEmpty()
   Symbole: string;
 
-
+  @IsNotEmpty()
+  readonly status?: boolean;
 }

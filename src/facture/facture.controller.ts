@@ -3,7 +3,7 @@ import { Controller, Post,Put, Body, Get,Delete ,NotFoundException,HttpException
 import { FactureService } from './facture.service';
 import { FactureDto } from 'src/facture/dto/facture.dto';
 import { UpdateFactureDto  } from './dto/updatefacture.dto';
-
+import { Facture, FactureDocument } from '../schemas/facture.schema';
 @Controller('facture')
 export class FactureController {
   constructor(private readonly Service: FactureService) {}
@@ -16,18 +16,18 @@ export class FactureController {
       return { success: false, message: error.message, statusCode: 400 };
     }
   }
-
   @Get()
   async findAll(): Promise<FactureDto[]> {
     return this.Service.findAll();
   }
-
+  // @Get('paiement/:id')
+  // async getFactureById(@Param('id') id: string): Promise<Facture> {
+  //   return this.Service.findByIdWithPaiements(id);
+  // }
   @Get('/:id')
   FindOne(@Param('id') id: string) {
     return this.Service.getFactureById(id);
   }
-
-  
   @Put(':id')
   async updateFacture(@Param('id') id: string, @Body() updatefactureDto: UpdateFactureDto) {
     return this.Service.updateFacture(id, updatefactureDto);
@@ -44,6 +44,4 @@ export class FactureController {
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
-
 }

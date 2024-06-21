@@ -2,7 +2,7 @@
 import * as mongoose from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Client } from './clients.schema'; 
-import { Devise } from './devise.schema'; 
+import { Paiement } from './paiement.schema'; 
 import { Service } from './services.schema'; 
 export type FactureDocument = Facture & mongoose.Document;
 
@@ -15,25 +15,10 @@ export class Facture {
   Date_Fact: Date;
 
 
-  @Prop({ type: Date })
-  Date_Echeance: Date;
-  @Prop({ type: Date })
-  Date_Jour_Actuel: Date;
-  @Prop({ type: String })
-  Status_delais: string;
-  @Prop({ type: String })
-  Etat_delais: string;
-  @Prop({ type:  Number })  
-  nombre_jours_retard: number;
-  @Prop({ type:  Number })  
-  comptant_Reception: number;
 
   @Prop({ type:  Number })  
   total_TTC: number;
-  @Prop({ type:  Number })  
-montant_Paye: number;
-@Prop({ type:  Number })  
-  montant_Restant: number;  
+
   @Prop({ type:  Number })  
   total_HT: number;
 
@@ -66,6 +51,9 @@ montant_Paye: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Parametre' })
   parametre: mongoose.Schema.Types.ObjectId;
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Paiement' }] })
+  paiement: mongoose.Schema.Types.ObjectId[];
+
 }
 
 

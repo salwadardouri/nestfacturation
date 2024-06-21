@@ -11,6 +11,8 @@ export class Devise {
 
   @Prop({ type: String })
   Symbole: string;
+  @Prop({ default: true })
+  status: boolean;
 }
 
 export const DeviseSchema = SchemaFactory.createForClass(Devise);
