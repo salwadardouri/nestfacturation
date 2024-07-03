@@ -10,8 +10,6 @@ export class UpdateDto  {
   @IsEmail({}, { message: 'Please enter correct email' })
   readonly email: string;
 
- 
-  readonly password: string;
 
 
   @MinLength(6)
@@ -31,13 +29,9 @@ export class UpdateDto  {
   @IsString()
   readonly code_postal:string;
   
-  @IsNotEmpty()
-  @IsArray()
-  @ArrayUnique()
-  @IsString({ each: true })
-  @ArrayNotEmpty({ message: 'Au moins un rôle doit être fourni' })
-  roles: UserRole[];
-  
 
+
+  @IsNotEmpty()
+  readonly status?: boolean;
 
 }

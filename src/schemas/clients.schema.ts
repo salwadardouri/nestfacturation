@@ -21,17 +21,6 @@ resetToken: string;
 
 @Prop()
 resetTokenExpiration: Date;
-@Prop({ default: null, required: false })
-Nom_entreprise?: string;
-
-@Prop({ default: null, required: false })
-num_fax?: string;
-
-@Prop({ default: null, required: false })
-num_bureau?: string;
-
-@Prop({ default: null, required: false })
-siteweb?: string;
 
 
 @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Facture' }])

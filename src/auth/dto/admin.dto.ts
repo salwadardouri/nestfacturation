@@ -1,7 +1,7 @@
 import { IsString, IsEmail, MinLength, IsNotEmpty, IsIn,ArrayUnique,IsArray ,ArrayNotEmpty} from 'class-validator';
 import { UserRole } from '../roles.enum';
 
-export class SignUpDto {
+export class AdminDto {
   @IsNotEmpty()
   @IsString()
   readonly fullname: string;
@@ -16,19 +16,6 @@ export class SignUpDto {
   readonly password: string;
 
 
-  readonly  country: string;
+  roles: string[];
 
-
-  readonly num_phone: number;
-
-  readonly address: string;
-
-
-  readonly code_postal: number;
-  
-
-  roles: UserRole[];
-  readonly matricule_fiscale:string;
-  readonly type:string;
-  
 }

@@ -8,6 +8,7 @@ import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { Client, ClientDocument } from '../schemas/clients.schema';
 import { ClientDto } from 'src/clients/dto/clients.dto';
+import { AdminDto } from './dto/admin.dto';
 import * as crypto from 'crypto';
 import { MailerService } from '../mailer/mailer.service';
 
@@ -23,6 +24,18 @@ export class AuthService {
      
        
       ) {}
+      async createAdmin(adminDto: AdminDto): Promise<User> {
+        const { password, ...rest } = adminDto;
+    
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new this.userModel({
+          ...rest,
+          password: hashedPassword,
+          roles:['ADMIN']
+        });
+        return newUser.save();
+      }
+    
       async getClientIdFromToken(token: string): Promise<string> {
         try {
           const payload = this.jwtService.verify(token);

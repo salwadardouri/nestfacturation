@@ -9,6 +9,8 @@ export class Echeance {
 
   @Prop({ type: Number, default: null }) 
   montantCheque: number;
+  @Prop({ type: Number, default: null }) 
+  montantRestant: number;
   @Prop({ type: Date })
   dateCh: Date;
 

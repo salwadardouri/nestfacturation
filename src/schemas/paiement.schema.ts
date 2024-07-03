@@ -12,7 +12,7 @@ export class Paiement {
 
   @Prop({ type: Number, default: null }) 
   montantPaye: number;
-
+ 
   @Prop({ type: String })
   typepaiement: string;
 

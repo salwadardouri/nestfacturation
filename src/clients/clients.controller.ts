@@ -76,6 +76,10 @@ export class ClientsController {
       return { message: 'Password create successfully' };
     
   }
+  @Get('active')
+  async getAllActiveClients(): Promise<Client[]> {
+    return this.service.getAllActiveClients();
+  }
  
   @Delete(':id')
   @HttpCode(HttpStatus.OK) //pour message d'erreur

@@ -25,10 +25,12 @@ export class PaiementService {
       if (typepaiement === 'cheque' && paiementDto.echeances) {
         echeances = await Promise.all(
           paiementDto.echeances.map(async (echeanceDto: EcheanceDto) => {
-            const { numCheque, montantCheque, dateEcheance, dateCh } = echeanceDto;
+            const { numCheque, montantCheque, dateEcheance, dateCh ,montantRestant} = echeanceDto;
             const createdEcheance = new this.echeanceModel({
               numCheque,
               montantCheque,
+  montantRestant,
+
               dateEcheance,
               dateCh,
             });

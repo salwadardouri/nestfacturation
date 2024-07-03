@@ -12,6 +12,7 @@ export class Service {
   @Prop({ type: String })
   libelle: string;
 
+
   @Prop({ type: Number })
   prix_unitaire: number;
 

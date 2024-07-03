@@ -1,10 +1,11 @@
 import { Controller, Post, Body, Res, HttpStatus,UnauthorizedException,Get,HttpException, Req,NotFoundException,BadRequestException} from '@nestjs/common';
 import { Response } from 'express';
 import { LoginDto } from './dto/login.dto';
-import { SignUpDto } from './dto/signup.dto';
+import { AdminDto } from './dto/admin.dto';
 import { AuthService } from './auth.service';
 import { ClientDto } from 'src/clients/dto/clients.dto';
 import { ModifierPasswordDto } from './dto/ModifierPassword.dto';
+import { User } from 'src/schemas/user.schema';
 //import { CurrentUser } from './decorators/current-user.decorator';
 //@CurrentUser() pour extraire l'utilisateur à partir du jeton JWT dans la demande.
 
@@ -29,6 +30,12 @@ export class AuthController {
   //     }
   //   }
   // }
+  @Post('Admin')
+  async create(@Body() adminDto: AdminDto): Promise<User> {
+    // Ensure the new user has roles set to ['ADMIN']
+    adminDto.roles = ["ADMIN"];
+    return this.authService.createAdmin(adminDto);
+  }
 
   @Post('signupclient')
   async signUp(@Body() signUpDto:  ClientDto, @Res() res: Response): Promise<void> {

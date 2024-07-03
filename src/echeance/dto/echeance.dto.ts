@@ -8,6 +8,9 @@ export class EcheanceDto {
   @IsNumber()
   @IsOptional()
   montantCheque: number;
+  @IsNumber()
+  @IsOptional()
+  montantRestant: number;
   dateCh: Date;
   @IsOptional()
   dateEcheance: Date;

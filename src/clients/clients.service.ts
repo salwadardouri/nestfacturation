@@ -22,6 +22,7 @@ export class ClientsService {
   async isEmailValid(email: string): Promise<boolean> {
     return validator.isEmail(email);
   }
+
   async createAccount(clientDto: ClientDto): Promise<{ user: Client; resetLink: string; message: string }> {
     const { fullname, email, country, num_phone, address, code_postal,  matricule_fiscale } = clientDto;
   
@@ -61,11 +62,8 @@ if (!isEmailValid) {
       roles:['CLIENT'],
       type,
       matricule_fiscale,
-      Nom_entreprise: null, 
-      num_fax: null,
-      num_bureau: null,
-      siteweb: null,
-      genre: null,
+   
+   
 
     });
 
@@ -95,8 +93,9 @@ if (!isEmailValid) {
     }
   }
 }
-
-  
+async getAllActiveClients(): Promise<Client[]> {
+  return this.clientModel.find({ status: true }).exec();
+}
   async getEmailFromToken(token: string): Promise<string | null> {
     try {
       // Rechercher le client par le token dans la base de données
@@ -209,10 +208,7 @@ async updateClient(id: string, updateClientDto: UpdateClientDto): Promise<any> {
   if (updateClientDto.address !== undefined) client.address = updateClientDto.address;
   if (updateClientDto.code_postal !== undefined) client.code_postal = updateClientDto.code_postal;
   if (updateClientDto.matricule_fiscale !== undefined) client.matricule_fiscale = updateClientDto.matricule_fiscale;
-  if (updateClientDto.Nom_entreprise !== undefined) client.Nom_entreprise = updateClientDto.Nom_entreprise;
-  if (updateClientDto.num_fax !== undefined) client.num_fax = updateClientDto.num_fax;
-  if (updateClientDto.num_bureau !== undefined) client.num_bureau = updateClientDto.num_bureau;
-  if (updateClientDto.siteweb !== undefined) client.siteweb = updateClientDto.siteweb;
+  
 
   // Enregistrez les modifications en utilisant la méthode save
   return await client.save();
