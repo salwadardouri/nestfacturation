@@ -1,7 +1,17 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+// search-service.dto.ts
 
-export class SearchDTO{
+import { IsOptional, IsString } from 'class-validator';
+
+export class SearchDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  key: string;
+  reference?: string;
+
+  @IsOptional()
+  @IsString()
+  libelle?: string;
+
+  @IsOptional()
+  @IsString()
+  unite?: string;
 }

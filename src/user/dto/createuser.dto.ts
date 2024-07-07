@@ -1,41 +1,27 @@
-import { IsString, IsEmail, MinLength, IsNotEmpty, IsArray, ArrayNotEmpty } from 'class-validator';
-import { UserRole } from 'src/auth/roles.enum';
+// createuser.dto.ts
+import {  IsArray } from 'class-validator';
 
 export class CreateUserDto {
-  @IsNotEmpty()
-  @IsString()
-  readonly fullname: string;
 
-  @IsNotEmpty()
-  @IsEmail({}, { message: 'Please enter correct email' })
-  readonly email: string;
+  fullname: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(6)
-  readonly password: string;
 
-  @IsNotEmpty()
-  @IsString()
-  readonly country: string;
+  email: string;
 
-  @IsNotEmpty()
-  @IsString()
-  readonly num_phone: number;
+  password: string;
 
-  @IsNotEmpty()
-  @IsString()
-  readonly address: string;
 
-  @IsNotEmpty()
-  @IsString()
-  readonly code_postal: number;
+  country: string;
 
- 
-  @IsNotEmpty()
+  num_phone: string;
+
+
+  address: string;
+
+
+  code_postal: string;
+
   @IsArray()
-  @IsString({ each: true })
-  @ArrayNotEmpty({ message: 'Au moins un rôle doit être fourni' })
-  roles: UserRole[];
-  
+ 
+  roles: string[];
 }

@@ -1,8 +1,7 @@
-import { Controller, Post, Body, BadRequestException,Get } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, Get } from '@nestjs/common';
 import { UserService } from './user.service';
-
-import { User} from '../schemas/user.schema';
-
+import { CreateUserDto } from './dto/createuser.dto';
+import { User } from '../schemas/user.schema';
 
 @Controller('users')
 export class UserController {
@@ -13,17 +12,12 @@ export class UserController {
     return this.userService.getAllUsers();
   }
 
-    // @Post('signup')
-  // async signUp(@Body() createUserDto: CreateUserDto): Promise<{ message: string }> {
-  //   try {
-  //     await this.userService.createUser(createUserDto);
-  //     return { message: 'Inscription réussie.' };
-  //   } catch (error) {
-  //     throw new BadRequestException(`Erreur lors de l'inscription : ${error.message}`);
-  //   }
-  // }
-  // @Post('sendemail')
-  // async comptable(@Body() mailDto: MailDto) {
-  //   return await this.userService.comptable(mailDto);
-  // }
+  @Post('Admin')
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+    const existingUser = await this.userService.findByEmail(createUserDto.email);
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+    return this.userService.create(createUserDto);
+  }
 }

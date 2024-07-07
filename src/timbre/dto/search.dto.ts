@@ -1,7 +1,9 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+// search-service.dto.ts
 
-export class SearchDTO{
-  @IsString()
-  @IsNotEmpty()
-  key: string;
+import { IsNumber, IsOptional } from 'class-validator';
+
+export class SearchDto {
+  @IsOptional()
+  @IsNumber()
+Valeur?: number;
 }

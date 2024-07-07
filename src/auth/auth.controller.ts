@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Res, HttpStatus,UnauthorizedException,Get,HttpException, Req,NotFoundException,BadRequestException} from '@nestjs/common';
 import { Response } from 'express';
 import { LoginDto } from './dto/login.dto';
-import { AdminDto } from './dto/admin.dto';
+
 import { AuthService } from './auth.service';
 import { ClientDto } from 'src/clients/dto/clients.dto';
 import { ModifierPasswordDto } from './dto/ModifierPassword.dto';
@@ -30,12 +30,6 @@ export class AuthController {
   //     }
   //   }
   // }
-  @Post('Admin')
-  async create(@Body() adminDto: AdminDto): Promise<User> {
-    // Ensure the new user has roles set to ['ADMIN']
-    adminDto.roles = ["ADMIN"];
-    return this.authService.createAdmin(adminDto);
-  }
 
   @Post('signupclient')
   async signUp(@Body() signUpDto:  ClientDto, @Res() res: Response): Promise<void> {
@@ -59,19 +53,24 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response): Promise<void> {
-    try {
-      const { accessToken, refreshToken, user } = await this.authService.login(loginDto);
-
-      res.status(HttpStatus.OK).json({
-        message: 'Login successful',
-        user,
-        accessToken,
-        refreshToken,
-      });
-    } catch (error) {
-      res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
-    }
+      try {
+          const { accessToken, refreshToken, user } = await this.authService.login(loginDto);
+  
+          res.status(HttpStatus.OK).json({
+              message: 'Login successful',
+              user,
+              accessToken,
+              refreshToken,
+          });
+      } catch (error) {
+          if (error instanceof HttpException) {
+              res.status(error.getStatus()).json({ message: error.message });
+          } else {
+              res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid credentials' });
+          }
+      }
   }
+  
   // @Post('/logout')
   // async logout(@Res({ passthrough: true }) res: Response): Promise<void> {
   //   // Effacer le cookie contenant le token

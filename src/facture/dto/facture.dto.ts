@@ -17,7 +17,7 @@ export class FactureDto {
   @IsArray()
   @Type(() => ServiceFactDto)
   services: ServiceFactDto[];
-
+  @IsOptional()
   @IsMongoId()
   timbreid: string;
 

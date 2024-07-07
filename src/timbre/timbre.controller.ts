@@ -1,8 +1,8 @@
 import { Controller, Post, Patch,Query,Body, Get,ConflictException,Put ,Param,Delete,HttpException,NotFoundException,HttpStatus} from '@nestjs/common';
 import { TimbreService } from './timbre.service';
 import { TimbreDto } from './dto/timbre.dto';
-import { Timbre} from 'src/schemas/timbre.schema';
-import { SearchDTO } from './dto/search.dto';
+import { Timbre } from 'src/schemas/timbre.schema';
+import { SearchDto } from './dto/search.dto';
 import { ActivatedTimbreDto } from './dto/activatedTimbre.dto';
 @Controller('timbre')
 export class TimbreController {
@@ -35,29 +35,12 @@ export class TimbreController {
       }
     }
     
-    @Put(':id') // Point de terminaison de mise à jour
-    async update(
-      @Param('id') id: string, // ID du service à mettre à jour
-      @Body() TimbreDto: TimbreDto, // Données de mise à jour
-    ): Promise<Timbre> {
-      const updatedTimbre = await this.Service.update(id,TimbreDto); // Appelle le service pour mettre à jour
-      if (!updatedTimbre) {
-        throw new NotFoundException('Service not found');
-      }
-      return updatedTimbre;
-    }
-  @Post('/search')
-  async Search(@Query() searchDto: SearchDTO) {
-    try {
-      return await this.Service.Search(searchDto.key);
-    } catch (error) {
-      throw new HttpException({
-        status: HttpStatus.NOT_FOUND,
-        error: error.message,
-      }, HttpStatus.NOT_FOUND);
-    }
-  }
-  
+    @Put(':id')
+    async update(@Param('id') id: string, @Body() timbreDto: TimbreDto) {
+      return this.Service.update(id, timbreDto);
+    } 
+
+
   @Patch('activated/:id')
   async activatedTimbre(
     @Param('id') id: string,
@@ -66,4 +49,10 @@ export class TimbreController {
     return await this.Service.activatedTimbre(id, activatedTimbreDto);
   }
     
+
+  @Post('search')
+  async search(@Query() searchDto: SearchDto): Promise<Timbre[]> {
+    return this.Service.search(searchDto);
+  }
+  
 }

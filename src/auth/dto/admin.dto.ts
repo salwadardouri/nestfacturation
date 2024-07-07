@@ -16,6 +16,8 @@ export class AdminDto {
   readonly password: string;
 
 
-  roles: string[];
+  
+
+  roles: UserRole[];
 
 }

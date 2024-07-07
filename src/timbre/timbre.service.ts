@@ -1,16 +1,19 @@
-import { Injectable, ConflictException ,NotFoundException} from '@nestjs/common';
+import { Injectable, ConflictException ,NotFoundException,InternalServerErrorException} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types  } from 'mongoose';
 import { Timbre, TimbreDocument } from 'src/schemas/timbre.schema';
+import { Devise, DeviseDocument } from 'src/schemas/devise.schema';
 import { TimbreDto } from './dto/timbre.dto';
-import { Devise } from 'src/schemas/devise.schema';
+import { DeviseDto } from 'src/devise/dto/devise.dto';
 import { ActivatedTimbreDto } from './dto/activatedTimbre.dto';
-
+import { SearchDto } from './dto/search.dto';
 @Injectable()
 export class TimbreService {
     constructor(
         @InjectModel(Timbre.name)
         private TimbreModel: Model<TimbreDocument>,
+        @InjectModel(Devise.name)
+        private DeviseModel: Model<DeviseDocument>,
       ) {}
     
       async create(TimbreDto: TimbreDto): Promise<Timbre> {
@@ -37,22 +40,20 @@ export class TimbreService {
         return timbre.map(timbre => timbre.toObject());
       }
       async update(id: string, timbreDto: TimbreDto): Promise<Timbre> {
-        try {
-          const objectId = new Types.ObjectId(id);
-          
-          // Trouvez le Timbre existant
-          let updatedTimbre = await this.TimbreModel.findByIdAndUpdate(objectId, { Valeur: timbreDto.Valeur, deviseId: timbreDto.deviseId , status:timbreDto.status }, { new: true }).exec();
-      
-          if (!updatedTimbre) {
-            throw new NotFoundException('Timbre not found');
-          }
-      
-          // Enregistrez les modifications
-          return updatedTimbre;
-        } catch (error) {
-          // Gérez les erreurs
-          throw new NotFoundException('Timbre not found');
+        const {deviseId, ...timbreData } = timbreDto;
+    
+        const timbre = await this.TimbreModel.findById(id);
+        if (!timbre) {
+          throw new NotFoundException('timbre not found');
         }
+    
+        timbre.set({
+          ...timbreData,
+    
+          devise: deviseId,
+        });
+    
+        return await timbre.save();
       }
       async activatedTimbre(id: string, activatedTimbreDto: ActivatedTimbreDto): Promise<any> {
         const timbre = await this.TimbreModel.findById(id);
@@ -73,20 +74,14 @@ export class TimbreService {
     const deletedTimbre = await this.TimbreModel.findByIdAndDelete(id).exec();
     return !!deletedTimbre;
   }
-  async Search(key: string): Promise<any> {
-    const keyword = key
-      ? {
-          $or: [
-            { Valeur: { $regex: key, $options: 'i' } },
-          ],
-        }
-      : {};
+  async search(searchDto: SearchDto): Promise<Timbre[]> {
+    const { Valeur } = searchDto;
+    
+    const query = {
+      ...(Valeur && { Valeur: { $regex: Valeur, $options: 'i' } }),
 
-    try {
-      const results = await this.TimbreModel.find(keyword);
-      return results.length > 0 ? results : [];
-    } catch (error) {
-      throw new Error('An error occurred while searching');
-    }
+    };
+
+    return this.TimbreModel.find(query).exec();
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable,HttpException, HttpStatus,BadRequestException ,NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable,HttpException, HttpStatus,BadRequestException ,ConflictException,NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
@@ -8,7 +8,7 @@ import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { Client, ClientDocument } from '../schemas/clients.schema';
 import { ClientDto } from 'src/clients/dto/clients.dto';
-import { AdminDto } from './dto/admin.dto';
+
 import * as crypto from 'crypto';
 import { MailerService } from '../mailer/mailer.service';
 
@@ -24,18 +24,8 @@ export class AuthService {
      
        
       ) {}
-      async createAdmin(adminDto: AdminDto): Promise<User> {
-        const { password, ...rest } = adminDto;
-    
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new this.userModel({
-          ...rest,
-          password: hashedPassword,
-          roles:['ADMIN']
-        });
-        return newUser.save();
-      }
-    
+
+      
       async getClientIdFromToken(token: string): Promise<string> {
         try {
           const payload = this.jwtService.verify(token);
@@ -76,16 +66,24 @@ export class AuthService {
       async login(loginDto: LoginDto): Promise<{ accessToken: string, refreshToken: string, user: any }> {
         const { email, password } = loginDto;
     
+        // Chercher l'utilisateur ou le client par email
         const user = await this.userModel.findOne({ email }) || await this.clientModel.findOne({ email });
         if (!user || !(await bcrypt.compare(password, user.password))) {
-          throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
         }
     
+        // Vérifier le statut du client
+        if (user.status === false) {
+            throw new HttpException('Account is blocked', HttpStatus.FORBIDDEN);
+        }
+    
+        // Générer les tokens si les credentials sont valides et le statut est true
         const accessToken = this.jwtService.sign({ id: user._id });
         const refreshToken = this.jwtService.sign({ id: user._id }, { expiresIn: '7d' });
     
         return { accessToken, refreshToken, user };
-      }
+    }
+    
     
 async requestPasswordReset(email: string): Promise<{ resetCode: string; resetCodeExpiration: Date }> {
   const user = await this.userModel.findOne({ email });

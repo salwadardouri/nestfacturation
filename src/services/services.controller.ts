@@ -3,7 +3,7 @@ import { Controller, Post,Put, Body, Patch,BadRequestException,Get,Delete ,Query
 import { ServicesService } from './services.service';
 import { ServicesDto } from 'src/services/dto/services.dto';
 import { Service, ServiceSchema } from 'src/schemas/services.schema';
-import { SearchDTO } from './dto/search.dto';
+import { SearchDto } from './dto/search.dto';
 import { UpdateDto } from './dto/update.dto';
 import { ActivatedServiceDto } from './dto/activatedService.dto';
 @Controller('services')
@@ -49,16 +49,10 @@ export class ServicesController {
     }
     return updatedService;
   }
-  @Post('/search')
-  async Search(@Query() searchDto: SearchDTO) {
-    try {
-      return await this.Service.Search(searchDto.key);
-    } catch (error) {
-      throw new HttpException({
-        status: HttpStatus.NOT_FOUND,
-        error: error.message,
-      }, HttpStatus.NOT_FOUND);
-    }
+
+  @Post('search')
+  async search(@Query() searchServiceDto: SearchDto): Promise<Service[]> {
+    return this.Service.search(searchServiceDto);
   }
   @Get(':id')
   async getServiceById(@Param('id') id: string) {

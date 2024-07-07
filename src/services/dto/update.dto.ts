@@ -1,5 +1,5 @@
 
-import { IsString, IsNumber, IsMongoId, IsNotEmpty } from 'class-validator';
+import { IsString, IsNumber, IsMongoId, IsNotEmpty ,IsOptional} from 'class-validator';
 
 export class UpdateDto {
   
@@ -21,13 +21,12 @@ export class UpdateDto {
   @IsNumber()
   prix_unitaire: number;
 
-
+  @IsOptional()
   @IsMongoId()
-  @IsNotEmpty()
   deviseId: string;
   
+  @IsOptional()
   @IsMongoId()
-  @IsNotEmpty()
   categoriesId : string;
 
 

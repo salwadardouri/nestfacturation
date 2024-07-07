@@ -5,13 +5,10 @@ import { Service, ServiceDocument } from '../schemas/services.schema';
 import { ServicesDto } from './dto/services.dto';
 import { UpdateDto } from './dto/update.dto';
 import { ActivatedServiceDto } from './dto/activatedService.dto';
-import * as mongoose from 'mongoose';
-import { Client, ClientDocument } from '../schemas/clients.schema';
+import { SearchDto } from './dto/search.dto';
 import {Tva, TvaDocument } from 'src/schemas/tva.schema';
 import { Facture, FactureDocument } from 'src/schemas/facture.schema';
-import {Categories, CategoriesDocument } from 'src/schemas/categories.schema';
-import {Devise, DeviseDocument} from 'src/schemas/devise.schema';
-import * as crypto from 'crypto';
+
 
 @Injectable()
 export class ServicesService {
@@ -89,46 +86,36 @@ export class ServicesService {
   }
 
 
-  async updateService(serviceId: string, UpdateDto: UpdateDto): Promise<Service> {
-    // Convert the service ID to ObjectId
-    const objectId = new Types.ObjectId(serviceId);
+  async updateService(id: string, updateDto: UpdateDto): Promise<Service> {
+    const { categoriesId, deviseId, ...serviceData } = updateDto;
 
-    // Find the existing service
-    const existingService = await this.serviceModel.findById(objectId);
-    if (!existingService) {
+    const service = await this.serviceModel.findById(id);
+    if (!service) {
       throw new NotFoundException('Service not found');
     }
-    existingService.libelle = UpdateDto.libelle;
-    existingService.reference = UpdateDto.reference;
-    existingService.prix_unitaire = UpdateDto.prix_unitaire;
-    existingService.unite = UpdateDto.unite;
-    existingService.status = UpdateDto.status;
-    return await existingService.save();
-  }
- 
 
-  async Search(key: string): Promise<any> {
-    const keyword = key
-      ? {
-          $or: [
-            { prix_unitaire: { $regex: key, $options: 'i' } },
-            { libelle: { $regex: key, $options: 'i' } },
-            {reference: { $regex: key, $options: 'i' } },
-            { devise: { $regex: key, $options: 'i' } },
-            { categories: { $regex: key, $options: 'i' } },
-  
-          ],
-        }
-      : {};
+    service.set({
+      ...serviceData,
 
-    try {
-      const results = await this.serviceModel.find(keyword);
-      return results.length > 0 ? results : [];
-    } catch (error) {
-      throw new Error('An error occurred while searching');
-    }
+      categories: categoriesId,
+      devise: deviseId,
+    });
+
+    return await service.save();
   }
 
+
+  async search(searchServiceDto: SearchDto): Promise<Service[]> {
+    const { reference, libelle, unite } = searchServiceDto;
+    
+    const query = {
+      ...(reference && { reference: { $regex: reference, $options: 'i' } }),
+      ...(libelle && { libelle: { $regex: libelle, $options: 'i' } }),
+      ...(unite && { unite: { $regex: unite, $options: 'i' } }),
+    };
+
+    return this.serviceModel.find(query).exec();
+  }
   async getServiceById(id: string): Promise<Service> {
     let service;
     try {
